@@ -94,7 +94,7 @@ print(df)
 df.to_csv("holdings_pnl_tracker.csv", index=False)
     
     
-'''import plotly.express as px
+import plotly.express as px
 import plotly.graph_objects as go
 
 holdings_file = "holdings.csv"
@@ -422,7 +422,7 @@ html_template = f"""<!DOCTYPE html>
   <div class="header">
     <h1>📊 Portfolio Dashboard</h1>
     <div class="info">
-      <div><strong>Owner:</strong> SM Thamizha</div>
+      <div><strong>Owner:</strong> Lavs</div>
       <div><strong>Last Updated:</strong> {datetime.today().strftime('%d-%m-%Y')}</div>
     </div>
   </div>
@@ -465,6 +465,6 @@ html_template = f"""<!DOCTYPE html>
 </body>
 </html>"""
 
-# Write the full HTML to index.html
+#Write the full HTML to index.html
 with open("index.html", "w") as f:
-    f.write(html_template)'''
+    f.write(html_template)
