@@ -389,6 +389,12 @@ html_template = f"""<!DOCTYPE html>
       width: 50% !important;
       height: 100% !important;
       }}
+    @media (max-width: 768px) {{
+      .plot,
+      #plot-container > div {{
+        width: 100% !important;
+      }}
+    }}
     /* Table header styling */
     th {{
       background-color: #ffe082;  /* Soft yellow */
