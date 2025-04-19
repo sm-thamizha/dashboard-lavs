@@ -23,12 +23,12 @@ for _, row in holdings_df.iterrows():
         holdings_dict[symbol].append(entry)
 
 # Display the resulting holdings_dict
-for symbol, entries in holdings_dict.items():
+'''for symbol, entries in holdings_dict.items():
     print(f"Symbol: {symbol}")
     
     for entry in entries:
         print(f"  Date: {entry['Date']}, Entry: {entry['Entry']}, Quantity: {entry['Quantity']}")
-    print("\n")
+    print("\n")'''
 
 start_date = min([datetime.strptime(purchase["Date"], "%Y-%m-%d")
                       for purchases in holdings_dict.values()
@@ -57,9 +57,9 @@ for symbol, purchases in holdings_dict.items():
         print(f"No historical data found for {symbol}")
 
 # Optionally print out the historical data
-for symbol, data in historical_data.items():
+'''for symbol, data in historical_data.items():
     for date, close_price in data.items():
-        print(f"Symbol: {symbol}, Date: {date}, Close: {close_price}")
+        print(f"Symbol: {symbol}, Date: {date}, Close: {close_price}")'''
 
 daily_rows = []
 current_date = start_date
@@ -88,13 +88,13 @@ while current_date <= end_date:
     current_date += timedelta(days=1)
 
 
-'''df = pd.DataFrame(daily_rows)
+df = pd.DataFrame(daily_rows)
 df.sort_values(by=["Date", "Symbol"], inplace=True)
 print(df)
 df.to_csv("holdings_pnl_tracker.csv", index=False)
     
     
-import plotly.express as px
+'''import plotly.express as px
 import plotly.graph_objects as go
 
 holdings_file = "holdings.csv"
