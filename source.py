@@ -59,9 +59,9 @@ for symbol, purchases in holdings_dict.items():
 for symbol, data in historical_data.items():
     for date, close_price in data.items():
         print(f"Symbol: {symbol}, Date: {date}, Close: {close_price}")
-daily_rows = []
-current_date = start_date
 
+'''daily_rows = []
+current_date = start_date
 while current_date <= end_date:
     today_str = current_date.strftime("%Y-%m-%d")
     for symbol, purchases in holdings_dict.items():
@@ -466,4 +466,4 @@ html_template = f"""<!DOCTYPE html>
 
 # Write the full HTML to index.html
 with open("index.html", "w") as f:
-    f.write(html_template)
+    f.write(html_template)'''
