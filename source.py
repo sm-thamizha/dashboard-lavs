@@ -50,9 +50,9 @@ for symbol, purchases in holdings_dict.items():
     # Check if data is available
     if not df.empty:
 	    data = {date.strftime("%Y-%m-%d"): round(close_price, 2) for date, close_price in zip(df.index, df['Close'])}
-	    print(data)
+	    #print(data)
 	    historical_data[symbol] = data
-	    print(historical_data[symbol])
+	    #print(historical_data[symbol])
     else:
         print(f"No historical data found for {symbol}")
 
@@ -61,7 +61,7 @@ for symbol, data in historical_data.items():
     for date, close_price in data.items():
         print(f"Symbol: {symbol}, Date: {date}, Close: {close_price}")
 
-'''daily_rows = []
+daily_rows = []
 current_date = start_date
 while current_date <= end_date:
     today_str = current_date.strftime("%Y-%m-%d")
@@ -88,7 +88,7 @@ while current_date <= end_date:
     current_date += timedelta(days=1)
 
 
-df = pd.DataFrame(daily_rows)
+'''df = pd.DataFrame(daily_rows)
 df.sort_values(by=["Date", "Symbol"], inplace=True)
 print(df)
 df.to_csv("holdings_pnl_tracker.csv", index=False)
