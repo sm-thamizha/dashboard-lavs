@@ -33,7 +33,12 @@ if os.path.exists(pnl_file):
     last_date = pnl_df['Date'].max()
     start_date = last_date + timedelta(days=1)
 else:
-    start_date = min([purchase["Date"] for purchases in holdings_dict.values() for purchase in purchases])
+    start_date = min([
+    datetime.strptime(purchase["Date"], "%Y-%m-%d")
+    for purchases in holdings_dict.values()
+    for purchase in purchases
+])
+
 #print(holdings_dict)
 
 end_date = datetime.today()
@@ -53,7 +58,7 @@ for symbol, purchases in holdings_dict.items():
         "range_to": end_date.strftime("%Y-%m-%d"),
         "cont_flag": "1"
     })
-    #print(f"API response for {symbol}: {res}")
+    print(f"API response for {symbol}: {res}")
     candles = res.get("candles", [])
     if candles:
         data = {}
