@@ -56,7 +56,7 @@ for symbol, purchases in holdings_dict.items():
     else:
         print(f"No historical data found for {symbol}")
 
-# Optionally print out the historical data
+#Optionally print out the historical data
 '''for symbol, data in historical_data.items():
     for date, close_price in data.items():
         print(f"Symbol: {symbol}, Date: {date}, Close: {close_price}")'''
