@@ -116,6 +116,9 @@ df_total = df.groupby('Date')['PnL'].sum().reset_index()
 
 
 #X-AXIS TICK MONTHS INSTEAD OF DAYS TO UNCLUTTER
+month_counts = df_total.groupby('Month')['PnL'].count()
+valid_months = month_counts[month_counts >= 5].index
+df_total = df_total[df_total['Month'].isin(valid_months)]
 df_total['Month'] = pd.to_datetime(df_total['Date']).dt.to_period('M').dt.to_timestamp()
 first_trading_days = df_total.groupby('Month').first().reset_index()
 tick_dates = first_trading_days['Date'].tolist()
