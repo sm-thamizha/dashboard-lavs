@@ -122,7 +122,7 @@ valid_months = month_counts[month_counts >= 5].index
 df_total = df_total[df_total['Month'].isin(valid_months)]
 first_trading_days = df_total.groupby('Month').first().reset_index()
 tick_dates = first_trading_days['Date'].tolist()
-
+df_total = df_total.reset_index(drop=True)
 df_total['Line Color'] = df_total['PnL'].apply(lambda x: 'green' if x >= 0 else 'red')
 df_total['Marker Color'] = df_total['PnL'].apply(lambda x: 'green' if x >= 0 else 'red')
 
