@@ -1,215 +1,849 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📈 Portfolio Dashboard</title>
 
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>📈 Portfolio Dashboard</title>
+      <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+      <link href="https://fonts.googleapis.com/css2?family=Bungee+Spice&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+      <style>
+        body {
+          background-color: #1c1c1c;
+          color: #ffffff;
+          font-family: 'Silkscreen', sans-serif;
+          padding: 1rem 2rem 2rem 2rem;
+        }
+        h1 {
+          font-family: 'Bungee Spice', sans-serif;
+          font-size: 3rem;
+          color: #ffffff;
+          text-shadow: 2px 2px #00000088;
+          margin: 0;
+        }
+        .header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+        .info {
+          text-align: right;
+        }
+        .main-content {
+          display: flex;
+          gap: 1.5rem;
+          margin-bottom: 1.5rem;
+        }
+        .plot-container {
+          width: 70%;
+        }
+        .summary-grid-container {
+          width: 30%;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
+          gap: 1rem;
+        }
+        .summary-item {
+          font-size: 1.1rem;
+          padding: 0.75rem;
+          background-color: #2a2a2a;
+          border: 2px solid #3d3d3d;
+          border-radius: 10px;
+          color: #ffffff;
+          text-align: center;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
+        .summary-item .value {
+          font-size: 1.5rem;  /* Increased font size for values */
+          margin-top: 0.5rem;
+        }
+        .summary-item .pnl-wrapper {
+          display: flex;
+          flex-direction: column;  /* Changed to column layout */
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+        }
+        .large-summary-item {
+          grid-column: span 2;
+        }
+        .table-container {
+          width: 100%;
+        }
+        .text-green {
+          color: #4caf50;
+        }
+        .text-red {
+          color: #f44336;
+        }
+        .section-title {
+          margin: 0.5rem 0;
+          font-size: 1.2rem;
+          color: #aaaaaa;
+        }
 
-  <!--GOOGLE FONTS FOR CUSTOM FONT STYLES-->
-  <link href="https://fonts.googleapis.com/css2?family=Bungee+Spice&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
-  
+        /* PnL badge styling - matched to table styling */
+        .pnl-badge {
+          display: inline-block;
+          padding: 2px 6px;
+          border-radius: 3px;
+          font-size: 12px;
+          min-width: 40px;
+          text-align: center;
+          margin-top: 5px;  /* Added margin top */
+        }
+        .pnl-up {
+          background-color: #2f6a3122;  /* Dimmer green background */
+          color: #009900;  /* Brighter green text */
+        }
+        .pnl-down {
+          background-color: #cc000022;  /* Dimmer red background */
+          color: #ff0000;  /* Brighter red text */
+        }
+        .arrow-up:before {
+          content: "▲";
+          font-size: 9px;
+          margin-right: 2px;
+        }
+        .arrow-down:before {
+          content: "▼";
+          font-size: 9px;
+          margin-right: 2px;
+        }
 
-  <!--PLOTLY.JS FOR INTERACTIVE CHARTS-->
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        @media (max-width: 1100px) {
+          .main-content {
+            flex-direction: column;
+          }
+          .plot-container {
+            width: 100%;
+            margin-bottom: 1rem;
+          }
+          .summary-grid-container {
+            width: 100%;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>📊 Portfolio Dashboard</h1>
+        <div class="info">
+          <div><strong>Owner:</strong> SM Thamizha</div>
+          <div><strong>Last Updated:</strong> 27-04-2025</div>
+        </div>
+      </div>
 
-
-  <!-- CSS Styling -->
-  <style>
-    /* General body styles */
-    body {
-      background-color: #fff8e1; /* Light yellow background */
-      color: #3e2723;             /* Dark brown text */
-      font-family: 'Silkscreen', sans-serif;
-      padding: 1rem 2rem 2rem 2rem;
-    }
-
-    /* Header section layout */
-    .header {
-      text-align: center;
-      width: 100%;
-      margin-bottom: 1rem;
-    }
-
-    /* Dashboard title style */
-    h1 {
-      font-family: 'Bungee Spice', sans-serif;
-      font-size: 3rem;
-      color: #ff6f00;
-      text-shadow: 2px 2px #00000044;
-      margin: 0 auto 0.5rem auto;
-    }
-
-    /* Owner and date info */
-    .info {
-      text-align: right;
-      font-size: 1rem;
-      color: #6d4c41;
-      font-family: 'Silkscreen', sans-serif;
-      margin-bottom: 1rem;
-    }
-	
-    /* Summary boxes container */
-    .summary {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    /* Individual summary box styling */
-    .summary-item {
-      font-size: 1.25rem;
-      padding: 1rem;
-      flex: 1;
-      background-color: #fff3cd;
-      border: 2px solid #ffcf40;
-      border-radius: 10px;
-      text-align: center;
-      color: #5d4037;
-      white-space: normal;
-      overflow-wrap: break-word;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    /* Main content layout: Chart + Table side-by-side */
-    .content {
-      display: flex;
-      justify: space-between;
-      gap: 1rem;
-    }
-
-    /* Chart container */
-    .plot {
-      flex: 0 1 auto;
-      height: auto;
-	}
-
-    /* Table container */
-    .table-container {
-      flex: 1 1 auto;
-      overflow-x: auto;
-      box-sizing: border-box;
-    }
-
-    .summary-item .label {
-      font-weight: bold;
-      margin-bottom: 0.5rem;
-      display: block;
-    }
-
-    .summary-item .value {
-      font-weight: normal;
-    }
-
-    .table-container h3 {
-      margin-bottom: 0;
-    }
-
-    .table-container table {
-      margin-top: 0.25rem;
-    }
-
-	@media (max-width: 768px) {
-	.summary {
-	  flex-direction: column;
-	}
-	.content {
-      flex-direction: column;
-	}
-	.plot, .table-container {
-      width: 100%;
-	}
-	}
-	
-    /* Table styling */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 1rem;
-      font-size: 0.95rem;
-    }
-
-    /* Table cell styles */
-    th, td {
-      padding: 0.75rem;
-      text-align: center;
-      border: 1px solid #bcaaa4;
-      white-space: nowrap;
-    }
-
-    /* Table header styling */
-    th {
-      background-color: #ffe082;
-      color: #4e2600;
-      font-weight: bold;
-	  padding: 0.75rem;
-    }
-   
-    /* Zebra stripe effect for table rows */
-    tbody tr:nth-child(even) {
-      background-color: #fffde7;
-    }
-
-    /* Hover effect for rows */
-    tbody tr:hover {
-      background-color: #f1f8e9;
-    }
-
-    /* Text color helpers for PnL positive/negative */
-    .text-green {
-      color: #2e7d32;
-    }
-
-    .text-red {
-      color: #c62828;
-    }
-  </style>
-</head>
-
-<body>
-  <!-- Dashboard Header Section -->
-  <div class="header">
-    <h1>📊 Portfolio Dashboard</h1>
-    <div class="info">
-    <div><strong>Owner:</strong> Lavs</div>
-    <div><strong>Last Updated:</strong> 25-04-2025</div>
-  </div>
-
-
-  <!-- Summary Boxes -->
-  <div class="summary">
-    <div class="summary-item">
-    <div class="label">💰<strong>Total Invested:</strong></div>
-    <div class="value">₹121,616.74</div>
+      <div class="main-content">
+        <!-- Chart on the left (70%) -->
+        <div class="plot-container">
+          
+    <div class="chart-wrapper">
+      <style>
+        .chart-wrapper {
+          border: 2px solid #3d3d3d;
+          border-radius: 8px;
+          overflow: hidden;
+          padding: 8px 8px 0px 8px; /* Reduced bottom padding to 0px */
+          background-color: #2a2a2a;
+        }
+      </style>
+      <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>                <div id="058f8fac-b571-4c87-9414-ffe1cec9836b" class="plotly-graph-div" style="height:500px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("058f8fac-b571-4c87-9414-ffe1cec9836b")) {                    Plotly.newPlot(                        "058f8fac-b571-4c87-9414-ffe1cec9836b",                        [{"fill":"tozeroy","fillcolor":"rgba(76, 175, 80, 0.3)","hoverinfo":"skip","line":{"color":"#4caf50","width":3},"mode":"lines","showlegend":false,"x":["2024-12-31T00:00:00","2025-01-01T00:00:00"],"y":[1070.9,2962.48],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(76, 175, 80, 0.3)","hoverinfo":"skip","line":{"color":"#4caf50","width":3},"mode":"lines","showlegend":false,"x":["2025-01-01T00:00:00","2025-01-02T00:00:00"],"y":[2962.48,3182.39],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(76, 175, 80, 0.3)","hoverinfo":"skip","line":{"color":"#4caf50","width":3},"mode":"lines","showlegend":false,"x":["2025-01-02T00:00:00","2025-01-03T00:00:00"],"y":[3182.39,3264.42],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(76, 175, 80, 0.3)","hoverinfo":"skip","line":{"color":"#4caf50","width":3},"mode":"lines","showlegend":false,"x":["2025-01-03T00:00:00","2025-01-04T19:11:23.706084377"],"y":[3264.42,0],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-04T19:11:23.706084377","2025-01-06T00:00:00"],"y":[0,-2177.55],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-06T00:00:00","2025-01-06T17:27:53.137769935"],"y":[-2177.55,0],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(76, 175, 80, 0.3)","hoverinfo":"skip","line":{"color":"#4caf50","width":3},"mode":"lines","showlegend":false,"x":["2025-01-06T17:27:53.137769935","2025-01-07T00:00:00"],"y":[0,814.8299999999999],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(76, 175, 80, 0.3)","hoverinfo":"skip","line":{"color":"#4caf50","width":3},"mode":"lines","showlegend":false,"x":["2025-01-07T00:00:00","2025-01-07T13:33:40.298880066"],"y":[814.8299999999999,0],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-07T13:33:40.298880066","2025-01-08T00:00:00"],"y":[0,-627.2200000000001],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-08T00:00:00","2025-01-09T00:00:00"],"y":[-627.2200000000001,-2582.57],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-09T00:00:00","2025-01-10T00:00:00"],"y":[-2582.57,-4651.95],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-10T00:00:00","2025-01-13T00:00:00"],"y":[-4651.95,-10501.14],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-13T00:00:00","2025-01-14T00:00:00"],"y":[-10501.14,-6794.4],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-14T00:00:00","2025-01-15T00:00:00"],"y":[-6794.4,-6661.26],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-15T00:00:00","2025-01-16T00:00:00"],"y":[-6661.26,-4887.929999999999],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-16T00:00:00","2025-01-17T00:00:00"],"y":[-4887.929999999999,-4650.44],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-17T00:00:00","2025-01-20T00:00:00"],"y":[-4650.44,-2943.56],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-20T00:00:00","2025-01-21T00:00:00"],"y":[-2943.56,-4633.29],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-21T00:00:00","2025-01-22T00:00:00"],"y":[-4633.29,-6517.65],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-22T00:00:00","2025-01-23T00:00:00"],"y":[-6517.65,-5572.3099999999995],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-23T00:00:00","2025-01-24T00:00:00"],"y":[-5572.3099999999995,-8190.9],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-24T00:00:00","2025-01-27T00:00:00"],"y":[-8190.9,-12889.7],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-27T00:00:00","2025-01-28T00:00:00"],"y":[-12889.7,-13664.16],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-28T00:00:00","2025-01-29T00:00:00"],"y":[-13664.16,-10694.92],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-29T00:00:00","2025-01-30T00:00:00"],"y":[-10694.92,-10024.48],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-30T00:00:00","2025-01-31T00:00:00"],"y":[-10024.48,-9121.62],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-01-31T00:00:00","2025-02-01T00:00:00"],"y":[-9121.62,-9952.47],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-01T00:00:00","2025-02-03T00:00:00"],"y":[-9952.47,-11430.89],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-03T00:00:00","2025-02-04T00:00:00"],"y":[-11430.89,-9908.35],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-04T00:00:00","2025-02-05T00:00:00"],"y":[-9908.35,-8638.039999999999],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-05T00:00:00","2025-02-06T00:00:00"],"y":[-8638.039999999999,-9275.47],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-06T00:00:00","2025-02-07T00:00:00"],"y":[-9275.47,-9574.92],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-07T00:00:00","2025-02-10T00:00:00"],"y":[-9574.92,-12183.34],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-10T00:00:00","2025-02-11T00:00:00"],"y":[-12183.34,-16356.36],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-11T00:00:00","2025-02-12T00:00:00"],"y":[-16356.36,-17382.18],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-12T00:00:00","2025-02-13T00:00:00"],"y":[-17382.18,-17639.31],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-13T00:00:00","2025-02-14T00:00:00"],"y":[-17639.31,-21323.9],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-14T00:00:00","2025-02-17T00:00:00"],"y":[-21323.9,-22017.15],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-17T00:00:00","2025-02-18T00:00:00"],"y":[-22017.15,-23580.1],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-18T00:00:00","2025-02-19T00:00:00"],"y":[-23580.1,-20834.85],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-19T00:00:00","2025-02-20T00:00:00"],"y":[-20834.85,-19938.67],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-20T00:00:00","2025-02-21T00:00:00"],"y":[-19938.67,-21304.49],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-21T00:00:00","2025-02-24T00:00:00"],"y":[-21304.49,-22580.88],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-24T00:00:00","2025-02-25T00:00:00"],"y":[-22580.88,-23510.7],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-25T00:00:00","2025-02-27T00:00:00"],"y":[-23510.7,-25768.51],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-27T00:00:00","2025-02-28T00:00:00"],"y":[-25768.51,-28604.86],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-02-28T00:00:00","2025-03-03T00:00:00"],"y":[-28604.86,-30345.75],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-03T00:00:00","2025-03-04T00:00:00"],"y":[-30345.75,-28806.37],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-04T00:00:00","2025-03-05T00:00:00"],"y":[-28806.37,-24599.91],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-05T00:00:00","2025-03-06T00:00:00"],"y":[-24599.91,-22350.4],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-06T00:00:00","2025-03-07T00:00:00"],"y":[-22350.4,-21573.1],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-07T00:00:00","2025-03-10T00:00:00"],"y":[-21573.1,-24066.4],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-10T00:00:00","2025-03-11T00:00:00"],"y":[-24066.4,-24366.38],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-11T00:00:00","2025-03-12T00:00:00"],"y":[-24366.38,-24090.649999999998],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-12T00:00:00","2025-03-13T00:00:00"],"y":[-24090.649999999998,-24538.559999999998],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-13T00:00:00","2025-03-17T00:00:00"],"y":[-24538.559999999998,-24822.39],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-17T00:00:00","2025-03-18T00:00:00"],"y":[-24822.39,-24638.63],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-18T00:00:00","2025-03-19T00:00:00"],"y":[-24638.63,-21147.63],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-19T00:00:00","2025-03-20T00:00:00"],"y":[-21147.63,-20161.079999999998],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-20T00:00:00","2025-03-21T00:00:00"],"y":[-20161.079999999998,-18288.84],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-21T00:00:00","2025-03-24T00:00:00"],"y":[-18288.84,-17625.43],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-24T00:00:00","2025-03-25T00:00:00"],"y":[-17625.43,-19798.16],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-25T00:00:00","2025-03-26T00:00:00"],"y":[-19798.16,-21187.42],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-26T00:00:00","2025-03-27T00:00:00"],"y":[-21187.42,-21137.11],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-27T00:00:00","2025-03-28T00:00:00"],"y":[-21137.11,-21231.06],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-03-28T00:00:00","2025-04-01T00:00:00"],"y":[-21231.06,-19609.9],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-01T00:00:00","2025-04-02T00:00:00"],"y":[-19609.9,-18395.09],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-02T00:00:00","2025-04-03T00:00:00"],"y":[-18395.09,-15942.75],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-03T00:00:00","2025-04-04T00:00:00"],"y":[-15942.75,-19372.49],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-04T00:00:00","2025-04-07T00:00:00"],"y":[-19372.49,-23937.98],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-07T00:00:00","2025-04-08T00:00:00"],"y":[-23937.98,-21674.92],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-08T00:00:00","2025-04-09T00:00:00"],"y":[-21674.92,-22148.32],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-09T00:00:00","2025-04-11T00:00:00"],"y":[-22148.32,-19655.04],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-11T00:00:00","2025-04-15T00:00:00"],"y":[-19655.04,-16303.36],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-15T00:00:00","2025-04-16T00:00:00"],"y":[-16303.36,-15310.369999999999],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-16T00:00:00","2025-04-17T00:00:00"],"y":[-15310.369999999999,-14837.67],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-17T00:00:00","2025-04-21T00:00:00"],"y":[-14837.67,-12786.01],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-21T00:00:00","2025-04-22T00:00:00"],"y":[-12786.01,-12660.91],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-22T00:00:00","2025-04-23T00:00:00"],"y":[-12660.91,-12961.99],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-23T00:00:00","2025-04-24T00:00:00"],"y":[-12961.99,-12249.31],"type":"scatter"},{"fill":"tozeroy","fillcolor":"rgba(244, 67, 54, 0.3)","hoverinfo":"skip","line":{"color":"#f44336","width":3},"mode":"lines","showlegend":false,"x":["2025-04-24T00:00:00","2025-04-25T00:00:00"],"y":[-12249.31,-15196.22],"type":"scatter"},{"hovertemplate":"\u20b9%{y:,.2f}\u003cbr\u003e%{x|%d %b %Y}\u003cextra\u003e\u003c\u002fextra\u003e","mode":"none","showlegend":false,"x":["2024-12-31T00:00:00.000000000","2025-01-01T00:00:00.000000000","2025-01-02T00:00:00.000000000","2025-01-03T00:00:00.000000000","2025-01-06T00:00:00.000000000","2025-01-07T00:00:00.000000000","2025-01-08T00:00:00.000000000","2025-01-09T00:00:00.000000000","2025-01-10T00:00:00.000000000","2025-01-13T00:00:00.000000000","2025-01-14T00:00:00.000000000","2025-01-15T00:00:00.000000000","2025-01-16T00:00:00.000000000","2025-01-17T00:00:00.000000000","2025-01-20T00:00:00.000000000","2025-01-21T00:00:00.000000000","2025-01-22T00:00:00.000000000","2025-01-23T00:00:00.000000000","2025-01-24T00:00:00.000000000","2025-01-27T00:00:00.000000000","2025-01-28T00:00:00.000000000","2025-01-29T00:00:00.000000000","2025-01-30T00:00:00.000000000","2025-01-31T00:00:00.000000000","2025-02-01T00:00:00.000000000","2025-02-03T00:00:00.000000000","2025-02-04T00:00:00.000000000","2025-02-05T00:00:00.000000000","2025-02-06T00:00:00.000000000","2025-02-07T00:00:00.000000000","2025-02-10T00:00:00.000000000","2025-02-11T00:00:00.000000000","2025-02-12T00:00:00.000000000","2025-02-13T00:00:00.000000000","2025-02-14T00:00:00.000000000","2025-02-17T00:00:00.000000000","2025-02-18T00:00:00.000000000","2025-02-19T00:00:00.000000000","2025-02-20T00:00:00.000000000","2025-02-21T00:00:00.000000000","2025-02-24T00:00:00.000000000","2025-02-25T00:00:00.000000000","2025-02-27T00:00:00.000000000","2025-02-28T00:00:00.000000000","2025-03-03T00:00:00.000000000","2025-03-04T00:00:00.000000000","2025-03-05T00:00:00.000000000","2025-03-06T00:00:00.000000000","2025-03-07T00:00:00.000000000","2025-03-10T00:00:00.000000000","2025-03-11T00:00:00.000000000","2025-03-12T00:00:00.000000000","2025-03-13T00:00:00.000000000","2025-03-17T00:00:00.000000000","2025-03-18T00:00:00.000000000","2025-03-19T00:00:00.000000000","2025-03-20T00:00:00.000000000","2025-03-21T00:00:00.000000000","2025-03-24T00:00:00.000000000","2025-03-25T00:00:00.000000000","2025-03-26T00:00:00.000000000","2025-03-27T00:00:00.000000000","2025-03-28T00:00:00.000000000","2025-04-01T00:00:00.000000000","2025-04-02T00:00:00.000000000","2025-04-03T00:00:00.000000000","2025-04-04T00:00:00.000000000","2025-04-07T00:00:00.000000000","2025-04-08T00:00:00.000000000","2025-04-09T00:00:00.000000000","2025-04-11T00:00:00.000000000","2025-04-15T00:00:00.000000000","2025-04-16T00:00:00.000000000","2025-04-17T00:00:00.000000000","2025-04-21T00:00:00.000000000","2025-04-22T00:00:00.000000000","2025-04-23T00:00:00.000000000","2025-04-24T00:00:00.000000000","2025-04-25T00:00:00.000000000"],"y":{"dtype":"f8","bdata":"mpmZmZm7kEApXI\u002fC9SSnQOF6FK7H3KhApHA9CteAqUCamZmZGQOhwHA9CtejdolA9yhcj8KZg8BxPQrXIy2kwDMzMzPzK7LAuB6F65GCxMBmZmZmZoq6wPYoXI9CBbrAR+F6FO4Xs8A9CtejcCqywIXrUbge\u002f6bA16NwPUoZssBmZmZmpnW5wML1KFxPxLXAZmZmZub+v8CamZmZ2SzJwK5H4XoUsMrAKVyPwnXjxMAK16NwPZTDwMP1KFzP0MHAj8L1KDxww8C4HoXrcVPGwM3MzMwsWsPA61G4HgXfwMCPwvUovB3CwClcj8J1s8LAUrgehavLx8BI4XoULvLPwFK4HoWL+dDAcT0K19M50cCamZmZ+dLUwJqZmZlJgNXAZmZmZgYH18BmZmZmtljUwBSuR+GqeNPAw\u002fUoXB\u002fO1MAfhetROA3WwM3MzMys9dbAPQrXoyAq2cCkcD0KN+\u002fbwAAAAABwot3A4XoUrpch3MDXo3A9+gXYwJqZmZmZ09XAZmZmZkYR1cCamZmZmYDXwB+F61GYy9fAmZmZmamG18BwPQrXo\u002fbXwFyPwvWYPdjAH4XrUagP2MAfhetR6KbUwOtRuB5FsNPAKVyPwjXc0cBSuB6FWzbRwNejcD2KVdPAFK5H4dqw1MCkcD0KR6TUwHE9CtfDu9TAmpmZmXkm08ApXI\u002fCxfbRwAAAAABgI8\u002fAw\u002fUoXB\u002fr0sCF61G4fmDXwBSuR+G6KtXArkfhehSh1cD2KFyPwjHTwEjhehSu18\u002fAwvUoXC\u002fnzcApXI\u002fC1frMwHsUrkcB+cjArkfhenS6yMCF61G4\u002flDJwOF6FK6n7MfAj8L1KByuzcA="},"type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#f2f5fa"},"error_y":{"color":"#f2f5fa"},"marker":{"line":{"color":"rgb(17,17,17)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"baxis":{"endlinecolor":"#A2B1C6","gridcolor":"#506784","linecolor":"#506784","minorgridcolor":"#506784","startlinecolor":"#A2B1C6"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"line":{"color":"#283442"}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"marker":{"line":{"color":"#283442"}},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#506784"},"line":{"color":"rgb(17,17,17)"}},"header":{"fill":{"color":"#2a3f5f"},"line":{"color":"rgb(17,17,17)"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#f2f5fa","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#f2f5fa"},"geo":{"bgcolor":"rgb(17,17,17)","lakecolor":"rgb(17,17,17)","landcolor":"rgb(17,17,17)","showlakes":true,"showland":true,"subunitcolor":"#506784"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"dark"},"paper_bgcolor":"rgb(17,17,17)","plot_bgcolor":"rgb(17,17,17)","polar":{"angularaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","radialaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"yaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"},"zaxis":{"backgroundcolor":"rgb(17,17,17)","gridcolor":"#506784","gridwidth":2,"linecolor":"#506784","showbackground":true,"ticks":"","zerolinecolor":"#C8D4E3"}},"shapedefaults":{"line":{"color":"#f2f5fa"}},"sliderdefaults":{"bgcolor":"#C8D4E3","bordercolor":"rgb(17,17,17)","borderwidth":1,"tickwidth":0},"ternary":{"aaxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"baxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""},"bgcolor":"rgb(17,17,17)","caxis":{"gridcolor":"#506784","linecolor":"#506784","ticks":""}},"title":{"x":0.05},"updatemenudefaults":{"bgcolor":"#506784","borderwidth":0},"xaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"#283442","linecolor":"#506784","ticks":"","title":{"standoff":15},"zerolinecolor":"#283442","zerolinewidth":2}}},"xaxis":{"tickmode":"array","tickvals":["2024-12-31T00:00:00","2025-01-30T00:00:00","2025-03-01T00:00:00","2025-03-31T00:00:00","2025-04-27T05:02:32.556091"],"ticktext":["Dec '24","Jan '25","Mar '25","Mar '25","Apr '25"],"tickangle":0,"gridcolor":"rgba(150, 150, 150, 0.15)","color":"#ffffff","ticks":"outside","ticklen":4},"yaxis":{"tickvals":[-35000,-30000,-25000,-20000,-15000,-10000,-5000,0,5000,10000,15000,20000,25000,30000],"tickformat":"\u20b9{:,.0f}","gridcolor":"rgba(150, 150, 150, 0.15)","zeroline":true,"zerolinecolor":"#777777","zerolinewidth":1,"color":"#ffffff"},"title":{"font":{"family":"Silkscreen, sans-serif","size":16,"color":"#ffffff","weight":"bold"},"text":"CUMULATIVE PNL","x":0.5,"xanchor":"center","y":0.98,"yanchor":"top"},"margin":{"t":30,"b":25,"l":50,"r":20},"font":{"family":"Silkscreen, sans-serif","size":12,"color":"#ffffff"},"height":500,"plot_bgcolor":"#2a2a2a","paper_bgcolor":"#2a2a2a","hovermode":"x unified"},                        {"responsive": true}                    )                };            </script>        </div>
     </div>
-    <div class="summary-item">
-    <div class="label">📈<strong>Current Value:</strong></div>
-    <div class="value">₹109,367.43</div>
-    </div>
-    <div class="summary-item">
-    <div class="label">📊<strong>Portfolio PnL:</strong></div>
-    <div class="value text-red">₹-12,249.31 (-10.07%)</div>
-    </div>
-  </div>
+    
+        </div>
 
-  <!-- Main Chart + Table Layout -->
-  <div class="content">
+        <!-- 2x2 Summary grid on the right (30%) -->
+        <div class="summary-grid-container">
+          <div class="summary-item">
+            <div class="label">💰<strong>Total Invested:</strong></div>
+            <div class="value">₹121,616.74</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">📈<strong>Current Value:</strong></div>
+            <div class="value">₹106,420.52</div>
+          </div>
+          <div class="summary-item">
+            <div class="label">📊<strong>Portfolio PnL:</strong></div>
+            <div class="value pnl-wrapper">
+              <span class="text-red">₹-15,196.22</span>
+              <span class="pnl-badge pnl-down arrow-down">12.5%</span>
+            </div>
+          </div>
+          <div class="summary-item">
+            <div class="label">📆<strong>Day's<br>PnL:</strong></div>
+            <div class="value pnl-wrapper">
+              <span class="text-red">₹-2,946.91</span>
+              <span class="pnl-badge pnl-down arrow-down">2.4%</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <!-- Portfolio PnL Line Chart -->
-<div class="plot" id="plot-container">
-<div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
-        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.0.1.min.js"></script>                <div id="998e6b59-7e52-4a74-89f3-25097e27420f" class="plotly-graph-div" style="height:600px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("998e6b59-7e52-4a74-89f3-25097e27420f")) {                    Plotly.newPlot(                        "998e6b59-7e52-4a74-89f3-25097e27420f",                        [{"hoverinfo":"skip","line":{"color":"green","width":3},"mode":"lines","showlegend":false,"x":["2024-12-31T00:00:00","2025-01-01T00:00:00"],"y":[1070.9,2962.48],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"green","width":3},"mode":"lines","showlegend":false,"x":["2025-01-01T00:00:00","2025-01-02T00:00:00"],"y":[2962.48,3182.39],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"green","width":3},"mode":"lines","showlegend":false,"x":["2025-01-02T00:00:00","2025-01-03T00:00:00"],"y":[3182.39,3264.42],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"green","width":3},"mode":"lines","showlegend":false,"x":["2025-01-03T00:00:00","2025-01-04T19:11:23.706084377"],"y":[3264.42,0],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-04T19:11:23.706084377","2025-01-06T00:00:00"],"y":[0,-2177.55],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-06T00:00:00","2025-01-06T17:27:53.137769935"],"y":[-2177.55,0],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"green","width":3},"mode":"lines","showlegend":false,"x":["2025-01-06T17:27:53.137769935","2025-01-07T00:00:00"],"y":[0,814.8299999999998],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"green","width":3},"mode":"lines","showlegend":false,"x":["2025-01-07T00:00:00","2025-01-07T13:33:40.298880066"],"y":[814.8299999999998,0],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-07T13:33:40.298880066","2025-01-08T00:00:00"],"y":[0,-627.2200000000001],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-08T00:00:00","2025-01-09T00:00:00"],"y":[-627.2200000000001,-2582.5699999999997],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-09T00:00:00","2025-01-10T00:00:00"],"y":[-2582.5699999999997,-4651.95],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-10T00:00:00","2025-01-13T00:00:00"],"y":[-4651.95,-10501.14],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-13T00:00:00","2025-01-14T00:00:00"],"y":[-10501.14,-6794.4],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-14T00:00:00","2025-01-15T00:00:00"],"y":[-6794.4,-6661.26],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-15T00:00:00","2025-01-16T00:00:00"],"y":[-6661.26,-4887.929999999999],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-16T00:00:00","2025-01-17T00:00:00"],"y":[-4887.929999999999,-4650.44],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-17T00:00:00","2025-01-20T00:00:00"],"y":[-4650.44,-2943.56],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-20T00:00:00","2025-01-21T00:00:00"],"y":[-2943.56,-4633.29],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-21T00:00:00","2025-01-22T00:00:00"],"y":[-4633.29,-6517.65],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-22T00:00:00","2025-01-23T00:00:00"],"y":[-6517.65,-5572.31],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-23T00:00:00","2025-01-24T00:00:00"],"y":[-5572.31,-8190.9],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-24T00:00:00","2025-01-27T00:00:00"],"y":[-8190.9,-12889.7],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-27T00:00:00","2025-01-28T00:00:00"],"y":[-12889.7,-13664.16],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-28T00:00:00","2025-01-29T00:00:00"],"y":[-13664.16,-10694.92],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-29T00:00:00","2025-01-30T00:00:00"],"y":[-10694.92,-10024.48],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-30T00:00:00","2025-01-31T00:00:00"],"y":[-10024.48,-9121.62],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-01-31T00:00:00","2025-02-01T00:00:00"],"y":[-9121.62,-9952.47],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-01T00:00:00","2025-02-03T00:00:00"],"y":[-9952.47,-11430.89],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-03T00:00:00","2025-02-04T00:00:00"],"y":[-11430.89,-9908.35],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-04T00:00:00","2025-02-05T00:00:00"],"y":[-9908.35,-8638.039999999999],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-05T00:00:00","2025-02-06T00:00:00"],"y":[-8638.039999999999,-9275.470000000001],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-06T00:00:00","2025-02-07T00:00:00"],"y":[-9275.470000000001,-9574.92],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-07T00:00:00","2025-02-10T00:00:00"],"y":[-9574.92,-12183.34],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-10T00:00:00","2025-02-11T00:00:00"],"y":[-12183.34,-16356.36],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-11T00:00:00","2025-02-12T00:00:00"],"y":[-16356.36,-17382.18],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-12T00:00:00","2025-02-13T00:00:00"],"y":[-17382.18,-17639.31],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-13T00:00:00","2025-02-14T00:00:00"],"y":[-17639.31,-21323.9],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-14T00:00:00","2025-02-17T00:00:00"],"y":[-21323.9,-22017.15],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-17T00:00:00","2025-02-18T00:00:00"],"y":[-22017.15,-23580.1],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-18T00:00:00","2025-02-19T00:00:00"],"y":[-23580.1,-20834.85],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-19T00:00:00","2025-02-20T00:00:00"],"y":[-20834.85,-19938.67],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-20T00:00:00","2025-02-21T00:00:00"],"y":[-19938.67,-21304.49],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-21T00:00:00","2025-02-24T00:00:00"],"y":[-21304.49,-22580.88],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-24T00:00:00","2025-02-25T00:00:00"],"y":[-22580.88,-23510.7],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-25T00:00:00","2025-02-27T00:00:00"],"y":[-23510.7,-25768.51],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-27T00:00:00","2025-02-28T00:00:00"],"y":[-25768.51,-28604.86],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-02-28T00:00:00","2025-03-03T00:00:00"],"y":[-28604.86,-30345.75],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-03T00:00:00","2025-03-04T00:00:00"],"y":[-30345.75,-28806.37],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-04T00:00:00","2025-03-05T00:00:00"],"y":[-28806.37,-24599.91],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-05T00:00:00","2025-03-06T00:00:00"],"y":[-24599.91,-22350.4],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-06T00:00:00","2025-03-07T00:00:00"],"y":[-22350.4,-21573.1],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-07T00:00:00","2025-03-10T00:00:00"],"y":[-21573.1,-24066.399999999998],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-10T00:00:00","2025-03-11T00:00:00"],"y":[-24066.399999999998,-24366.38],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-11T00:00:00","2025-03-12T00:00:00"],"y":[-24366.38,-24090.649999999998],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-12T00:00:00","2025-03-13T00:00:00"],"y":[-24090.649999999998,-24538.56],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-13T00:00:00","2025-03-17T00:00:00"],"y":[-24538.56,-24822.39],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-17T00:00:00","2025-03-18T00:00:00"],"y":[-24822.39,-24638.63],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-18T00:00:00","2025-03-19T00:00:00"],"y":[-24638.63,-21147.63],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-19T00:00:00","2025-03-20T00:00:00"],"y":[-21147.63,-20161.079999999998],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-20T00:00:00","2025-03-21T00:00:00"],"y":[-20161.079999999998,-18288.84],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-21T00:00:00","2025-03-24T00:00:00"],"y":[-18288.84,-17625.43],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-24T00:00:00","2025-03-25T00:00:00"],"y":[-17625.43,-19798.16],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-25T00:00:00","2025-03-26T00:00:00"],"y":[-19798.16,-21187.42],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-26T00:00:00","2025-03-27T00:00:00"],"y":[-21187.42,-21137.11],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-27T00:00:00","2025-03-28T00:00:00"],"y":[-21137.11,-21231.06],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-03-28T00:00:00","2025-04-01T00:00:00"],"y":[-21231.06,-19609.9],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-01T00:00:00","2025-04-02T00:00:00"],"y":[-19609.9,-18395.09],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-02T00:00:00","2025-04-03T00:00:00"],"y":[-18395.09,-15942.75],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-03T00:00:00","2025-04-04T00:00:00"],"y":[-15942.75,-19372.49],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-04T00:00:00","2025-04-07T00:00:00"],"y":[-19372.49,-23937.98],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-07T00:00:00","2025-04-08T00:00:00"],"y":[-23937.98,-21674.92],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-08T00:00:00","2025-04-09T00:00:00"],"y":[-21674.92,-22148.32],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-09T00:00:00","2025-04-11T00:00:00"],"y":[-22148.32,-19655.04],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-11T00:00:00","2025-04-15T00:00:00"],"y":[-19655.04,-16303.36],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-15T00:00:00","2025-04-16T00:00:00"],"y":[-16303.36,-15310.37],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-16T00:00:00","2025-04-17T00:00:00"],"y":[-15310.37,-14837.67],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-17T00:00:00","2025-04-21T00:00:00"],"y":[-14837.67,-12786.01],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-21T00:00:00","2025-04-22T00:00:00"],"y":[-12786.01,-12660.91],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-22T00:00:00","2025-04-23T00:00:00"],"y":[-12660.91,-12961.99],"type":"scatter"},{"hoverinfo":"skip","line":{"color":"red","width":3},"mode":"lines","showlegend":false,"x":["2025-04-23T00:00:00","2025-04-24T00:00:00"],"y":[-12961.99,-12249.31],"type":"scatter"},{"hovertemplate":"Total PnL: %{y:.2f}\u003cbr\u003eDate: %{x|%d-%m-%Y}\u003cextra\u003e\u003c\u002fextra\u003e","mode":"none","showlegend":false,"x":["2024-12-31","2025-01-01","2025-01-02","2025-01-03","2025-01-06","2025-01-07","2025-01-08","2025-01-09","2025-01-10","2025-01-13","2025-01-14","2025-01-15","2025-01-16","2025-01-17","2025-01-20","2025-01-21","2025-01-22","2025-01-23","2025-01-24","2025-01-27","2025-01-28","2025-01-29","2025-01-30","2025-01-31","2025-02-01","2025-02-03","2025-02-04","2025-02-05","2025-02-06","2025-02-07","2025-02-10","2025-02-11","2025-02-12","2025-02-13","2025-02-14","2025-02-17","2025-02-18","2025-02-19","2025-02-20","2025-02-21","2025-02-24","2025-02-25","2025-02-27","2025-02-28","2025-03-03","2025-03-04","2025-03-05","2025-03-06","2025-03-07","2025-03-10","2025-03-11","2025-03-12","2025-03-13","2025-03-17","2025-03-18","2025-03-19","2025-03-20","2025-03-21","2025-03-24","2025-03-25","2025-03-26","2025-03-27","2025-03-28","2025-04-01","2025-04-02","2025-04-03","2025-04-04","2025-04-07","2025-04-08","2025-04-09","2025-04-11","2025-04-15","2025-04-16","2025-04-17","2025-04-21","2025-04-22","2025-04-23","2025-04-24"],"y":{"dtype":"f8","bdata":"mpmZmZm7kEApXI\u002fC9SSnQOF6FK7H3KhApHA9CteAqUCamZmZGQOhwG89CtejdolA9yhcj8KZg8BwPQrXIy2kwDMzMzPzK7LAuB6F65GCxMBmZmZmZoq6wPYoXI9CBbrAR+F6FO4Xs8A9CtejcCqywIXrUbge\u002f6bA16NwPUoZssBmZmZmpnW5wMP1KFxPxLXAZmZmZub+v8CamZmZ2SzJwK5H4XoUsMrAKVyPwnXjxMAK16NwPZTDwMP1KFzP0MHAj8L1KDxww8C4HoXrcVPGwM3MzMwsWsPA61G4HgXfwMCQwvUovB3CwClcj8J1s8LAUrgehavLx8BI4XoULvLPwFK4HoWL+dDAcT0K19M50cCamZmZ+dLUwJqZmZlJgNXAZmZmZgYH18BmZmZmtljUwBSuR+GqeNPAw\u002fUoXB\u002fO1MAfhetROA3WwM3MzMys9dbAPQrXoyAq2cCkcD0KN+\u002fbwAAAAABwot3A4XoUrpch3MDXo3A9+gXYwJqZmZmZ09XAZmZmZkYR1cCZmZmZmYDXwB+F61GYy9fAmZmZmamG18BxPQrXo\u002fbXwFyPwvWYPdjAH4XrUagP2MAfhetR6KbUwOtRuB5FsNPAKVyPwjXc0cBSuB6FWzbRwNejcD2KVdPAFK5H4dqw1MCkcD0KR6TUwHE9CtfDu9TAmpmZmXkm08ApXI\u002fCxfbRwAAAAABgI8\u002fAw\u002fUoXB\u002fr0sCF61G4fmDXwBSuR+G6KtXArkfhehSh1cD2KFyPwjHTwEjhehSu18\u002fAw\u002fUoXC\u002fnzcApXI\u002fC1frMwHsUrkcB+cjArkfhenS6yMCF61G4\u002flDJwOF6FK6n7MfA"},"type":"scatter"}],                        {"template":{"data":{"barpolar":[{"marker":{"line":{"color":"rgb(237,237,237)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"rgb(51,51,51)"},"error_y":{"color":"rgb(51,51,51)"},"marker":{"line":{"color":"rgb(237,237,237)","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"rgb(51,51,51)","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"rgb(51,51,51)"},"baxis":{"endlinecolor":"rgb(51,51,51)","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"rgb(51,51,51)"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"},"colorscale":[[0,"rgb(20,44,66)"],[1,"rgb(90,179,244)"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"},"colorscale":[[0,"rgb(20,44,66)"],[1,"rgb(90,179,244)"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"},"colorscale":[[0,"rgb(20,44,66)"],[1,"rgb(90,179,244)"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"},"colorscale":[[0,"rgb(20,44,66)"],[1,"rgb(90,179,244)"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"},"colorscale":[[0,"rgb(20,44,66)"],[1,"rgb(90,179,244)"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"rgb(237,237,237)"},"line":{"color":"white"}},"header":{"fill":{"color":"rgb(217,217,217)"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"tickcolor":"rgb(237,237,237)","ticklen":6,"ticks":"inside"}},"colorscale":{"sequential":[[0,"rgb(20,44,66)"],[1,"rgb(90,179,244)"]],"sequentialminus":[[0,"rgb(20,44,66)"],[1,"rgb(90,179,244)"]]},"colorway":["#F8766D","#A3A500","#00BF7D","#00B0F6","#E76BF3"],"font":{"color":"rgb(51,51,51)"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"rgb(237,237,237)","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","paper_bgcolor":"white","plot_bgcolor":"rgb(237,237,237)","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside"},"bgcolor":"rgb(237,237,237)","radialaxis":{"gridcolor":"white","linecolor":"white","showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside"}},"scene":{"xaxis":{"backgroundcolor":"rgb(237,237,237)","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"rgb(237,237,237)","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"rgb(237,237,237)","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside","zerolinecolor":"white"}},"shapedefaults":{"fillcolor":"black","line":{"width":0},"opacity":0.3},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside"},"baxis":{"gridcolor":"white","linecolor":"white","showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside"},"bgcolor":"rgb(237,237,237)","caxis":{"gridcolor":"white","linecolor":"white","showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside"}},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside","title":{"standoff":15},"zerolinecolor":"white"},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","showgrid":true,"tickcolor":"rgb(51,51,51)","ticks":"outside","title":{"standoff":15},"zerolinecolor":"white"}}},"xaxis":{"tickmode":"array","tickvals":["2025-01-01","2025-02-01","2025-03-03","2025-04-01"],"tickformat":"%b %Y","title":{}},"yaxis":{"tickvals":[-35000,-30000,-25000,-20000,-15000,-10000,-5000,0,5000],"ticktext":["-35,000","-30,000","-25,000","-20,000","-15,000","-10,000","-5,000","0","5,000"],"title":{},"tick0":0,"dtick":5000},"font":{"family":"Silkscreen, sans-serif","size":12,"color":"#3e2723"},"title":{"text":"Portfolio PnL"},"height":600,"plot_bgcolor":"rgba(0, 0, 0, 0)","paper_bgcolor":"rgba(0, 0, 0, 0)"},                        {"responsive": true}                    )                };            </script>        </div>
-</div>
-  <div class="table-container">
-    <table>
-     <tbody id="holdingsTable">
-        <table border='1' style='width:100%; margin-top: 30px; text-align: center; border-collapse: collapse;'><tr><th>Ticker</th><th>Quantity</th><th>Avg. Price</th><th>PnL</th></tr><tr><td>BHARATSE.NS</td><td>52</td><td>94.45</td></td><td class='text-red'>-703.56 (-14.33%)</td></tr><tr><td>CEATLTD.NS</td><td>2</td><td>3208.42</td></td><td class='text-red'>-229.84 (-3.58%)</td></tr><tr><td>EIDPARRY.NS</td><td>5</td><td>868.50</td></td><td class='text-red'>-43.5 (-1.00%)</td></tr><tr><td>EMPIND.BO</td><td>4</td><td>1275.00</td></td><td class='text-red'>-906.0 (-17.76%)</td></tr><tr><td>GHCL.NS</td><td>7</td><td>709.16</td></td><td class='text-red'>-616.07 (-12.41%)</td></tr><tr><td>GICRE.NS</td><td>10</td><td>443.40</td></td><td class='text-red'>-173.5 (-3.91%)</td></tr><tr><td>GSPL.NS</td><td>13</td><td>353.49</td></td><td class='text-red'>-456.82 (-9.94%)</td></tr><tr><td>HIMATSEIDE.NS</td><td>26</td><td>185.88</td></td><td class='text-red'>-812.76 (-16.82%)</td></tr><tr><td>HINDPETRO.NS</td><td>12</td><td>408.25</td></td><td class='text-red'>-213.6 (-4.36%)</td></tr><tr><td>INDIAGLYCO.NS</td><td>4</td><td>1254.65</td></td><td class='text-green'>629.0 (12.53%)</td></tr><tr><td>KOTHARIPET.NS</td><td>25</td><td>187.95</td></td><td class='text-red'>-473.0 (-10.07%)</td></tr><tr><td>KOTHARIPRO.NS</td><td>48</td><td>99.13</td></td><td class='text-red'>-1159.68 (-24.37%)</td></tr><tr><td>MANGCHEFER.NS</td><td>31</td><td>154.36</td></td><td class='text-green'>1784.98 (37.30%)</td></tr><tr><td>MAZDA.NS</td><td>15</td><td>298.61</td></td><td class='text-red'>-654.15 (-14.60%)</td></tr><tr><td>MONTECARLO.NS</td><td>6</td><td>810.82</td></td><td class='text-red'>-1241.52 (-25.52%)</td></tr><tr><td>NATIONALUM.NS</td><td>23</td><td>210.67</td></td><td class='text-red'>-1118.72 (-23.09%)</td></tr><tr><td>NAVA.NS</td><td>10</td><td>495.13</td></td><td class='text-red'>-255.8 (-5.17%)</td></tr><tr><td>NITINSPIN.NS</td><td>11</td><td>433.95</td></td><td class='text-red'>-634.7 (-13.30%)</td></tr><tr><td>RANEHOLDIN.NS</td><td>3</td><td>1748.91</td></td><td class='text-red'>-1156.23 (-22.04%)</td></tr><tr><td>RPPINFRA.NS</td><td>25</td><td>194.00</td></td><td class='text-red'>-536.75 (-11.07%)</td></tr><tr><td>SRHHYPOLTD.NS</td><td>6</td><td>778.50</td></td><td class='text-red'>-1345.8 (-28.81%)</td></tr><tr><td>SUKHJITS.NS</td><td>18</td><td>264.75</td></td><td class='text-red'>-794.34 (-16.67%)</td></tr><tr><td>TGVSL.BO</td><td>47</td><td>104.50</td></td><td class='text-red'>-176.25 (-3.59%)</td></tr><tr><td>VLSFINANCE.NS</td><td>14</td><td>334.58</td></td><td class='text-red'>-859.6 (-18.35%)</td></tr><tr><td>WELCORP.NS</td><td>6</td><td>802.80</td></td><td class='text-red'>-101.1 (-2.10%)</td></tr>
+      <!-- Table at the bottom -->
+      <div class="table-container">
+        <div class="section-title">Portfolio Holdings</div>
+        
+    <table class="portfolio-table">
+      <thead>
+        <tr>
+          <th>TICKER</th>
+          <th>QUANTITY</th>
+          <th>AVERAGE</th>
+          <th>INVESTED</th>
+          <th>CURRENT</th>
+          <th>PNL</th>
+          <th>TREND</th>
+        </tr>
+      </thead>
+      <tbody>
+    
+    <style>
+      .portfolio-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 2px solid #3d3d3d;
+        border-radius: 8px;
+        overflow: hidden;
+        width: 100%;
+        table-layout: auto;
+      }
+
+      .portfolio-table th {
+        padding: 30px 15px;
+        background-color: #3d3d3d;
+        border-right: 1px solid #555;
+        font-weight: bold;
+        white-space: nowrap;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .portfolio-table th:last-child {
+        border-right: none;
+      }
+
+      .portfolio-table td {
+        padding: 30px 15px;
+        border-right: 1px solid #444;
+        border-bottom: 1px solid #444;
+        white-space: nowrap;
+        text-align: center;
+      }
+
+      .portfolio-table td:last-child {
+        border-right: none;
+        width: 100%;  /* Make sparkline column take maximum available width */
+        padding: 0;   /* Remove padding for sparkline cells */
+      }
+
+      .portfolio-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .portfolio-table tbody tr {
+        background-color: #2a2a2a;
+      }
+
+      /* Rounded corners for first and last cells in header row */
+      .portfolio-table thead tr th:first-child {
+        border-top-left-radius: 6px;
+      }
+
+      .portfolio-table thead tr th:last-child {
+        border-top-right-radius: 6px;
+      }
+
+      /* Rounded corners for first and last cells in last row */
+      .portfolio-table tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 6px;
+      }
+
+      .portfolio-table tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 6px;
+      }
+
+      .pnl-badge {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-size: 12px;
+        min-width: 40px;
+        text-align: center;
+        margin-left: 8px;
+      }
+
+      .pnl-up {
+        background-color: #2f6a3122;  /* Dimmer green background */
+        color: #009900;  /* Brighter green text */
+      }
+
+      .pnl-down {
+        background-color: #cc000022;  /* Dimmer red background */
+        color: #ff0000;  /* Brighter red text */
+      }
+
+      .arrow-up:before {
+        content: "▲";
+        font-size: 9px;
+        margin-right: 2px;
+      }
+
+      .arrow-down:before {
+        content: "▼";
+        font-size: 9px;
+        margin-right: 2px;
+      }
+
+      .text-green {
+        color: #4caf50;
+      }
+
+      .text-red {
+        color: #f44336;
+      }
+
+      /* Sparkline styling */
+      .sparkline-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .sparkline {
+        stroke: #f44336;
+        stroke-width: 0.5;
+        fill: none;
+      }
+
+      .sparkline.positive {
+        stroke: #4caf50;
+      }
+
+      .reference-line {
+        stroke: #888;
+        stroke-width: 1;
+        stroke-dasharray: 2, 2;
+      }
+
+      /* Ensure sparkline SVG takes full width and height */
+      .sparkline-svg {
+        width: 100%;
+        height: 80px;
+        display: block;
+      }
+    </style>
+    
+        <tr>
+          <td>BHARATSE.NS</td>
+          <td>52</td>
+          <td>₹94.45</td>
+          <td>₹4911.40</td>
+          <td>₹3934.32</td>
+          <td>
+            <span class="text-red">₹-977.08</span>
+            <span class="pnl-badge pnl-down arrow-down">19.9%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="9.714563817573747" x2="100" y2="9.714563817573747" class="reference-line" />
+        <polyline points="0.0,19.717725162642868 5.0,19.74767474750835 10.0,23.711003144706396 15.0,26.985491089998494 20.0,27.804113076321524 25.0,25.777524500424285 30.0,22.712683649190517 35.0,23.07207866757625 40.0,26.326600222958014 45.0,31.368113675313214 50.0,28.403104773631046 55.00000000000001,27.51460042262191 60.0,27.205121379011985 65.0,25.208482387980222 70.0,24.519641936074265 75.0,23.05211227766592 80.0,20.72602785311392 85.0,21.394901915109557 90.0,22.26343987620838 95.0,23.22182659190362 100.0,28.472987138317166" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>CEATLTD.NS</td>
+          <td>2</td>
+          <td>₹3208.42</td>
+          <td>₹6416.84</td>
+          <td>₹6069.00</td>
+          <td>
+            <span class="text-red">₹-347.84</span>
+            <span class="pnl-badge pnl-down arrow-down">5.4%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="9.921390633185027" x2="100" y2="9.921390633185027" class="reference-line" />
+        <polyline points="0.0,9.286680503153 1.282051282051282,10.196440530737554 2.564102564102564,10.514723922312328 3.8461538461538463,10.535942815083985 5.128205128205128,13.587484831807128 6.41025641025641,11.630041973622266 7.6923076923076925,12.265282575973583 8.974358974358974,12.395248294199952 10.256410256410255,13.216154208303227 11.538461538461538,13.242677824267794 12.82051282051282,14.286382112473397 14.102564102564102,13.952184551319888 15.384615384615385,14.282403570078714 16.666666666666664,14.79828790058949 17.94871794871795,15.059545517840455 19.230769230769234,16.509061130303895 20.51282051282051,19.33913095372293 21.794871794871796,16.200061004316726 23.076923076923077,16.778275832344224 24.358974358974358,18.526182124409026 25.64102564102564,19.610998017359712 26.923076923076923,17.259679462101072 28.205128205128204,18.036821409862814 29.48717948717949,19.251603021039863 30.76923076923077,17.499718186580385 32.05128205128205,15.310193688705585 33.33333333333333,13.884549330610248 34.61538461538461,16.205365727509637 35.8974358974359,17.298138705249688 37.17948717948718,18.840486973589112 38.46153846153847,19.157444184365662 39.743589743589745,22.589600090180294 41.02564102564102,24.74597006809939 42.30769230769231,25.08149381005113 43.58974358974359,26.08276031271344 44.871794871794876,24.35474673262206 46.15384615384615,23.341544602775706 47.43589743589743,23.2195359693387 48.717948717948715,22.474222360734437 50.0,22.507376880690146 51.28205128205128,24.869304882334617 52.56410256410257,23.341544602775706 53.84615384615385,26.605275547215353 55.12820512820513,27.849233135953426 56.41025641025641,31.841037338620378 57.692307692307686,31.387483505626328 58.97435897435898,26.509790529742922 60.256410256410255,26.715348553468296 61.53846153846154,26.122545736660285 62.82051282051282,26.62782062078523 64.1025641025641,27.65428455861388 65.38461538461539,25.966056402469352 66.66666666666666,24.97937788858756 67.94871794871796,25.03640366291136 69.23076923076923,25.03640366291136 70.51282051282051,22.5710335590051 71.7948717948718,21.624140469070156 73.07692307692307,19.68791650365695 74.35897435897436,19.237015032259357 75.64102564102564,17.79943504697996 76.92307692307693,18.560662825162964 78.2051282051282,19.70648303483214 79.48717948717949,18.645538396249567 80.76923076923077,18.730413967336165 82.05128205128204,18.103130449774227 83.33333333333334,18.702564170573382 84.61538461538461,18.967800330219024 85.8974358974359,24.414424868542334 87.17948717948718,23.60678076242135 88.46153846153845,24.011265905880958 89.74358974358975,19.892148346584094 91.02564102564102,18.019581059485844 92.3076923076923,14.818180612562909 93.58974358974359,14.91897035322826 94.87179487179486,14.75717629584442 96.15384615384616,15.486575734869945 97.43589743589743,14.924275076421168 98.71794871794873,12.969484579832773 100.0,14.534377921742077" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>EIDPARRY.NS</td>
+          <td>5</td>
+          <td>₹868.50</td>
+          <td>₹4342.50</td>
+          <td>₹4225.00</td>
+          <td>
+            <span class="text-red">₹-117.50</span>
+            <span class="pnl-badge pnl-down arrow-down">2.7%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="13.587321873130083" x2="100" y2="13.587321873130083" class="reference-line" />
+        <polyline points="0.0,11.357827240021575 1.282051282051282,9.07514386815103 2.564102564102564,9.163791766087748 3.8461538461538463,10.116756668907492 5.128205128205128,12.58560062644515 6.41025641025641,11.907444207229233 7.6923076923076925,13.808941617971882 8.974358974358974,15.599629156293634 10.256410256410255,18.01085198017242 11.538461538461538,20.48856072750375 12.82051282051282,19.810404308287843 14.102564102564102,17.81582660471164 15.384615384615385,14.815095259553662 16.666666666666664,15.400171385936012 17.94871794871795,15.054444583982797 19.230769230769234,17.26177724260714 20.51282051282051,17.92663647713254 21.794871794871796,15.927626378659493 23.076923076923077,17.869015343473663 24.358974358974358,21.224338280378525 25.64102564102564,20.426507198948045 26.923076923076923,17.886744923061013 28.205128205128204,17.904474502648362 29.48717948717949,17.895609712854686 30.76923076923077,18.595928106554773 32.05128205128205,16.791943383542513 33.33333333333333,15.790222136857583 34.61538461538461,16.034003856183563 35.8974358974359,14.145803630131415 37.17948717948718,14.899310762593537 38.46153846153847,17.91333929244202 39.743589743589745,20.785531185591765 41.02564102564102,20.098509976582186 42.30769230769231,21.43709323542665 43.58974358974359,24.105394963321928 44.871794871794876,26.822453035082404 46.15384615384615,26.84461500956658 47.43589743589743,28.387088433665518 48.717948717948715,28.218657427585743 50.0,28.84805750293646 51.28205128205128,28.98546174473838 52.56410256410257,29.965021016939133 53.84615384615385,30.013777360804326 55.12820512820513,31.706952211395684 56.41025641025641,32.07484098783307 57.692307692307686,32.00835506438053 58.97435897435898,30.1334520230189 60.256410256410255,28.369358854078172 61.53846153846154,28.723950445825054 62.82051282051282,29.929561857764448 64.1025641025641,30.37723374234488 65.38461538461539,28.62643775809466 66.66666666666666,29.038650483500405 67.94871794871796,26.698345977970995 69.23076923076923,26.698345977970995 70.51282051282051,23.143565270708514 71.7948717948718,23.95469353682951 73.07692307692307,21.618821426196934 74.35897435897436,21.055907274298757 75.64102564102564,21.06477206409243 76.92307692307693,21.299688993624738 78.2051282051282,20.61710017951199 79.48717948717949,20.936232612084183 80.76923076923077,20.550614256059447 82.05128205128204,21.281959414037388 83.33333333333334,19.95667333988343 84.61538461538461,22.310275030103345 85.8974358974359,25.155872553872065 87.17948717948718,23.085944137049648 88.46153846153845,23.82172168992443 89.74358974358975,21.357310127283604 91.02564102564102,15.901032009278484 92.3076923076923,16.082760200048757 93.58974358974359,16.787510988645685 94.87179487179486,15.222875590062575 96.15384615384616,15.116498112538508 97.43589743589743,15.604061551190465 98.71794871794873,14.358558585179551 100.0,15.670547474643008" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>EMPIND.BO</td>
+          <td>4</td>
+          <td>₹1275.00</td>
+          <td>₹5100.00</td>
+          <td>₹4121.80</td>
+          <td>
+            <span class="text-red">₹-978.20</span>
+            <span class="pnl-badge pnl-down arrow-down">19.2%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="12.947720605201575" x2="100" y2="12.947720605201575" class="reference-line" />
+        <polyline points="0.0,11.856643702409606 1.282051282051282,9.381118765863476 2.564102564102564,9.779971651778364 3.8461538461538463,10.666677654349485 5.128205128205128,15.205689422157764 6.41025641025641,13.847611827141783 7.6923076923076925,15.136467020470057 8.974358974358974,16.11876586346705 10.256410256410255,19.312885255628437 11.538461538461538,30.54339585324851 12.82051282051282,27.293239278768496 14.102564102564102,25.055048290865948 15.384615384615385,23.07726538550286 16.666666666666664,22.02244783597588 17.94871794871795,22.151003724824466 19.230769230769234,22.89596861917791 20.51282051282051,24.10241619144939 21.794871794871796,23.294821505092795 23.076923076923077,24.06945314302667 24.358974358974358,26.482348287569632 25.64102564102564,29.43913373108746 26.923076923076923,25.773642746481194 28.205128205128204,24.906714572963715 29.48717948717949,24.999011108547318 30.76923076923077,25.589049675313973 32.05128205128205,24.778158684115112 33.33333333333333,23.505785014998196 34.61538461538461,22.750931206117947 35.8974358974359,23.011339288657425 37.17948717948718,23.571711111843634 38.46153846153847,25.308863763720872 39.743589743589745,28.562316643043143 41.02564102564102,29.307281537396584 42.30769230769231,26.291162606717876 43.58974358974359,30.207172759336782 44.871794871794876,29.46880047466789 46.15384615384615,30.13135774796453 47.43589743589743,28.423871839667733 48.717948717948715,26.38016283745921 50.0,28.595279691465862 51.28205128205128,28.173352671655078 52.56410256410257,28.944688004746688 53.84615384615385,30.029172297854107 55.12820512820513,31.212545736229686 56.41025641025641,31.68391732867456 57.692307692307686,29.603948973201042 58.97435897435898,28.83590994495171 60.256410256410255,28.14038962323236 61.53846153846154,28.85239146916307 62.82051282051282,29.590763753831958 64.1025641025641,31.522398391403236 65.38461538461539,30.67524804693938 66.66666666666666,29.758875300787818 67.94871794871796,30.41483996439991 69.23076923076923,28.842502554636248 70.51282051282051,28.796354286844455 71.7948717948718,28.842502554636248 73.07692307692307,27.83053696805881 74.35897435897436,28.802946896528994 75.64102564102564,29.864357055740516 76.92307692307693,30.124765138279987 78.2051282051282,29.837986617002343 79.48717948717949,28.005241124699218 80.76923076923077,26.924053136434058 82.05128205128204,28.46342749777499 83.33333333333334,26.673533968421403 84.61538461538461,27.523980617727524 85.8974358974359,31.736658206150906 87.17948717948718,31.00158222632429 88.46153846153845,29.422652206876098 89.74358974358975,27.85690740679699 91.02564102564102,28.512872070409067 92.3076923076923,28.30850117018822 93.58974358974359,28.552427728516335 94.87179487179486,27.158090780235355 96.15384615384616,27.517388008042985 97.43589743589743,27.870092626166063 98.71794871794873,27.879981540692885 100.0,29.069947588753006" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>GHCL.NS</td>
+          <td>7</td>
+          <td>₹709.16</td>
+          <td>₹4964.12</td>
+          <td>₹4196.50</td>
+          <td>
+            <span class="text-red">₹-767.62</span>
+            <span class="pnl-badge pnl-down arrow-down">15.5%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="15.223771308066315" x2="100" y2="15.223771308066315" class="reference-line" />
+        <polyline points="0.0,13.543729131275263 1.282051282051282,11.78050494991507 2.564102564102564,10.726085173686378 3.8461538461538463,9.4432077792748 5.128205128205128,11.944525803995084 6.41025641025641,10.526916993732065 7.6923076923076925,13.988928592349595 8.974358974358974,15.400679514966907 10.256410256410255,18.49950207955011 11.538461538461538,19.881963563938847 12.82051282051282,17.298635112178545 14.102564102564102,18.37062855134439 15.384615384615385,18.692812371858714 16.666666666666664,15.922031515435531 17.94871794871795,12.776345849686614 19.230769230769234,13.479292367172405 20.51282051282051,14.340401851092494 21.794871794871796,13.291839962509524 23.076923076923077,15.283521762052608 24.358974358974358,18.282760236658664 25.64102564102564,19.65936383340168 26.923076923076923,16.214925897721276 28.205128205128204,14.12366000820105 29.48717948717949,12.659188096772315 30.76923076923077,16.109483920098413 32.05128205128205,19.571495518715952 33.33333333333333,19.460195653447364 34.61538461538461,19.571495518715952 35.8974358974359,15.29523753734404 37.17948717948718,16.677699021732764 38.46153846153847,17.281061449241403 39.743589743589745,21.9029348017105 41.02564102564102,22.160681858121954 42.30769230769231,22.11967664460196 43.58974358974359,24.960752152773708 44.871794871794876,24.42182648936793 46.15384615384615,26.044461367230976 47.43589743589743,26.46037139007673 48.717948717948715,26.349071524808142 50.0,27.497217503368283 51.28205128205128,25.833577411985228 52.56410256410257,27.25704410989396 53.84615384615385,29.71735692109424 55.12820512820513,30.590182180305774 56.41025641025641,31.66803350711733 57.692307692307686,25.728135434362365 58.97435897435898,23.765743073047854 60.256410256410255,21.276140823619002 61.53846153846154,21.229277722453283 62.82051282051282,23.185812196122072 64.1025641025641,24.374963388202215 65.38461538461539,24.497979028762224 66.66666666666666,25.9390193896081 67.94871794871796,28.241169234374084 69.23076923076923,28.241169234374084 70.51282051282051,25.382520063265176 71.7948717948718,25.142346669790868 73.07692307692307,24.11721633179075 74.35897435897436,25.3883779509109 75.64102564102564,26.337355749516725 76.92307692307693,26.524808154179592 78.2051282051282,28.04200105441977 79.48717948717949,26.272918985413853 80.76923076923077,24.550700017573664 82.05128205128204,23.42598558959639 83.33333333333334,25.335656962099456 84.61538461538461,26.841134087048204 85.8974358974359,29.670493819928524 87.17948717948718,29.301446898248486 88.46153846153845,30.267998359791452 89.74358974358975,28.832815886591288 91.02564102564102,26.85284986233964 92.3076923076923,26.056177142522394 93.58974358974359,26.185050670728124 94.87179487179486,25.2712201979966 96.15384615384616,24.925604826899413 97.43589743589743,24.59756311873938 98.71794871794873,25.534825142053773 100.0,28.071290492648345" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>GICRE.NS</td>
+          <td>10</td>
+          <td>₹443.40</td>
+          <td>₹4434.00</td>
+          <td>₹4280.00</td>
+          <td>
+            <span class="text-red">₹-154.00</span>
+            <span class="pnl-badge pnl-down arrow-down">3.5%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="14.275497512437816" x2="100" y2="14.275497512437816" class="reference-line" />
+        <polyline points="0.0,14.0992951907131 1.282051282051282,11.134950248756212 2.564102564102564,12.523839137645101 3.8461538461538463,11.311152570480932 5.128205128205128,16.006426202321723 6.41025641025641,12.358001658374796 7.6923076923076925,13.59141791044776 8.974358974358974,9.818615257048094 10.256410256410255,17.14655887230514 11.538461538461538,21.696724709784405 12.82051282051282,18.442164179104473 14.102564102564102,20.131633499170817 15.384615384615385,16.970356550580433 16.666666666666664,15.457089552238806 17.94871794871795,12.586028192371472 19.230769230769234,16.0478855721393 20.51282051282051,18.48362354892205 21.794871794871796,15.094320066334994 23.076923076923077,19.053689883913762 24.358974358974358,23.479477611940297 25.64102564102564,25.023839137645105 26.923076923076923,22.246061359867333 28.205128205128204,23.127072968490882 29.48717948717949,20.89863184079602 30.76923076923077,22.391169154228855 32.05128205128205,25.687189054726364 33.33333333333333,22.981965174129357 34.61538461538461,21.593076285240457 35.8974358974359,20.038349917081256 37.17948717948718,19.416459369817574 38.46153846153847,22.992330016583743 39.743589743589745,27.24191542288557 41.02564102564102,27.884535655058045 42.30769230769231,26.039593698175793 43.58974358974359,29.677653399668323 44.871794871794876,31.253109452736318 46.15384615384615,27.843076285240468 47.43589743589743,26.661484245439475 48.717948717948715,25.91521558872305 50.0,26.32980928689884 51.28205128205128,25.38660862354892 52.56410256410257,25.065298507462682 53.84615384615385,25.365878938640137 55.12820512820513,29.71911276948591 56.41025641025641,30.94216417910448 57.692307692307686,26.96206467661692 58.97435897435898,25.013474295190708 60.256410256410255,25.334784411276946 61.53846153846154,26.920605306799345 62.82051282051282,27.89490049751244 64.1025641025641,28.3716832504146 65.38461538461539,27.635779436152575 66.66666666666666,26.474917081260365 67.94871794871796,25.013474295190708 69.23076923076923,25.013474295190708 70.51282051282051,19.447553897180768 71.7948717948718,21.302860696517413 73.07692307692307,13.871268656716413 74.35897435897436,14.586442786069654 75.64102564102564,17.6026119402985 76.92307692307693,19.095149253731346 78.2051282051282,19.77922885572139 79.48717948717949,18.89821724709784 80.76923076923077,20.297470978441122 82.05128205128204,19.11587893864013 83.33333333333334,17.302031509121058 84.61538461538461,22.22533167495854 85.8974358974359,26.36090381426202 87.17948717948718,23.510572139303477 88.46153846153845,24.308665008291875 89.74358974358975,23.82151741293532 91.02564102564102,20.826077943615253 92.3076923076923,19.67558043117744 93.58974358974359,17.219112769485907 94.87179487179486,17.44713930348258 96.15384615384616,17.6129767827529 97.43589743589743,18.141583747927033 98.71794871794873,17.872097844112766 100.0,17.467868988391373" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>GSPL.NS</td>
+          <td>13</td>
+          <td>₹353.49</td>
+          <td>₹4595.37</td>
+          <td>₹4176.90</td>
+          <td>
+            <span class="text-red">₹-418.47</span>
+            <span class="pnl-badge pnl-down arrow-down">9.1%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="12.464871527448562" x2="100" y2="12.464871527448562" class="reference-line" />
+        <polyline points="0.0,10.551151986346838 1.282051282051282,9.845738124585193 2.564102564102564,9.185834834550118 3.8461538461538463,9.37925476438798 5.128205128205128,11.313454062766663 6.41025641025641,11.336209348629946 7.6923076923076925,12.97458993078601 8.974358974358974,13.17938750355551 10.256410256410255,14.283018867924532 11.538461538461538,16.023798236465343 12.82051282051282,13.793780221864047 14.102564102564102,12.667393571631742 15.384615384615385,13.04285578837585 16.666666666666664,10.07329098321798 17.94871794871795,9.219967763345029 19.230769230769234,10.300843841850767 20.51282051282051,10.99488006068077 21.794871794871796,11.165544704655357 23.076923076923077,13.07698871717076 24.358974358974358,14.760879871053387 25.64102564102564,16.649568597705507 26.923076923076923,15.511804304541574 28.205128205128204,14.817768085711585 29.48717948717949,14.237508296197976 30.76923076923077,16.626813311842234 32.05128205128205,15.705224234379447 33.33333333333333,14.86327865743814 34.61538461538461,14.88603394330141 35.8974358974359,16.56992509718404 37.17948717948718,16.956764956859775 38.46153846153847,19.607755759931734 39.743589743589745,22.793495780790742 41.02564102564102,24.56840807812648 42.30769230769231,25.9906134445814 43.58974358974359,28.266142030909265 44.871794871794876,28.095477386934675 46.15384615384615,28.22063145918271 47.43589743589743,27.936190385891727 48.717948717948715,27.651749312600742 50.0,27.72001517019058 51.28205128205128,29.52906039632123 52.56410256410257,29.290129894756802 53.84615384615385,29.403906324073198 55.12820512820513,30.951265762776146 56.41025641025641,31.952498340760403 57.692307692307686,31.0536645491609 58.97435897435898,26.502607376505168 60.256410256410255,26.081634588034518 61.53846153846154,27.321797667583205 62.82051282051282,29.24461932303025 64.1025641025641,30.496160045510575 65.38461538461539,30.518915331373858 66.66666666666666,30.89437754811795 67.94871794871796,30.769223475869914 69.23076923076923,30.769223475869914 70.51282051282051,29.836256755475496 71.7948717948718,27.902057457096813 73.07692307692307,27.20802123826681 74.35897435897436,26.10438987389779 75.64102564102564,27.151133023608615 76.92307692307693,27.39006352517304 78.2051282051282,25.2965772257514 79.48717948717949,26.61638380582156 80.76923076923077,25.9906134445814 82.05128205128204,26.081634588034518 83.33333333333334,25.012136152460414 84.61538461538461,26.9463354508391 85.8974358974359,27.79965867071205 87.17948717948718,26.582250877026645 88.46153846153845,25.91096994405993 89.74358974358975,21.39404570019911 91.02564102564102,21.38266805726747 92.3076923076923,22.361145349388455 93.58974358974359,21.54195505831042 94.87179487179486,20.381435479283212 96.15384615384616,20.643121266710914 97.43589743589743,19.971840333744197 98.71794871794873,20.461078979804682 100.0,19.789798046837962" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>HIMATSEIDE.NS</td>
+          <td>26</td>
+          <td>₹185.88</td>
+          <td>₹4832.88</td>
+          <td>₹3819.40</td>
+          <td>
+            <span class="text-red">₹-1013.48</span>
+            <span class="pnl-badge pnl-down arrow-down">21.0%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="12.835118285320238" x2="100" y2="12.835118285320238" class="reference-line" />
+        <polyline points="0.0,12.083608933672963 1.282051282051282,9.606724179180098 2.564102564102564,7.864460925735685 3.8461538461538463,8.354208593101312 5.128205128205128,13.155987446697718 6.41025641025641,10.225945367803313 7.6923076923076925,11.7796276228943 8.974358974358974,13.161616730230662 10.256410256410255,14.633674374094035 11.538461538461538,17.766370660174225 12.82051282051282,16.10573201795742 14.102564102564102,15.219119861519626 15.384615384615385,15.247266279184316 16.666666666666664,14.884177491309796 17.94871794871795,13.378344146248793 19.230769230769234,15.463993695202447 20.51282051282051,17.31884261930563 21.794871794871796,16.651772520652436 23.076923076923077,18.83593453143251 24.358974358974358,21.447922090715902 25.64102564102564,21.72938626736282 26.923076923076923,20.063118341613077 28.205128205128204,20.755520216164484 29.48717948717949,20.189777221104187 30.76923076923077,18.695202443109054 32.05128205128205,20.71611523143392 33.33333333333333,19.18495011047469 34.61538461538461,18.394035774096857 35.8974358974359,19.162432976342934 37.17948717948718,20.088450117511293 38.46153846153847,22.14313860703379 39.743589743589745,24.32167133428093 41.02564102564102,24.817048285179503 42.30769230769231,26.452355151498093 43.58974358974359,29.05871342724854 44.871794871794876,28.833542085931015 46.15384615384615,30.12827729850683 47.43589743589743,28.084847376050213 48.717948717948715,27.975076347157913 50.0,29.207889440871412 51.28205128205128,29.55971966168006 52.56410256410257,30.038208761979817 53.84615384615385,31.76358416482542 55.12820512820513,33.412964239976354 56.41025641025641,32.216741489226955 57.692307692307686,30.708093502399482 58.97435897435898,29.82429598772816 60.256410256410255,28.338165135032433 61.53846153846154,26.621233657486243 62.82051282051282,29.10937697904499 64.1025641025641,27.8033831994033 65.38461538461539,24.00643145643638 66.66666666666666,24.178124604190998 67.94871794871796,23.73341120508887 69.23076923076923,23.73341120508887 70.51282051282051,23.20425855299267 71.7948717948718,23.2746245971544 73.07692307692307,21.45073673248237 74.35897435897436,22.207875367662574 75.64102564102564,23.66585980269361 76.92307692307693,24.46240342260439 78.2051282051282,24.642540495658412 79.48717948717949,25.498191592665048 80.76923076923077,22.348607455986034 82.05128205128204,22.14313860703379 83.33333333333334,20.41494856242172 84.61538461538461,23.350619924849063 85.8974358974359,26.86329284940259 87.17948717948718,25.534781935629145 88.46153846153845,27.091278832486598 89.74358974358975,25.256132400748694 91.02564102564102,23.96702647170581 92.3076923076923,23.584235191466007 93.58974358974359,23.75029905568769 94.87179487179486,22.427417425447175 96.15384615384616,22.01085044400974 97.43589743589743,22.371124590117795 98.71794871794873,21.633688447302866 100.0,23.80659189101707" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>HINDPETRO.NS</td>
+          <td>12</td>
+          <td>₹408.25</td>
+          <td>₹4899.00</td>
+          <td>₹4568.40</td>
+          <td>
+            <span class="text-red">₹-330.60</span>
+            <span class="pnl-badge pnl-down arrow-down">6.7%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="9.937758665287124" x2="100" y2="9.937758665287124" class="reference-line" />
+        <polyline points="0.0,9.840759182617703 1.282051282051282,9.142362907397828 2.564102564102564,9.07446326952924 3.8461538461538463,9.006563631660637 5.128205128205128,13.681938696326963 6.41025641025641,14.215435851008802 7.6923076923076925,13.216341179513712 8.974358974358974,14.48703440248319 10.256410256410255,13.778938178996388 11.538461538461538,18.444613295395765 12.82051282051282,16.727722452146928 14.102564102564102,18.667712105535443 15.384615384615385,19.647406880496646 16.666666666666664,19.511607604759448 17.94871794871795,19.230309105018108 19.230769230769234,17.36791903776514 20.51282051282051,17.3388191929643 21.794871794871796,18.890810915675118 23.076923076923077,20.685301345059493 24.358974358974358,22.023894205897577 25.64102564102564,21.335197878944648 26.923076923076923,22.15969348163477 28.205128205128204,20.92780005173306 29.48717948717949,19.637706932229698 30.76923076923077,22.237293067770306 32.05128205128205,26.1075724262804 33.33333333333333,24.400381531298507 34.61538461538461,22.615591050181074 35.8974358974359,22.576791257113292 37.17948717948718,22.693190636316608 38.46153846153847,23.507986290739783 39.743589743589745,25.118177703052254 41.02564102564102,26.291871443352306 42.30769230769231,27.029067511639944 43.58974358974359,28.542259441282976 44.871794871794876,27.42676539058458 46.15384615384615,27.06786730470771 47.43589743589743,26.165772115882046 48.717948717948715,24.788379461976206 50.0,26.476170460424214 51.28205128205128,27.19396663217796 52.56410256410257,29.027256854630107 53.84615384615385,29.580153905845837 55.12820512820513,32.15064019658562 56.41025641025641,31.364944386963266 57.692307692307686,27.989362390067257 58.97435897435898,25.865073719606833 60.256410256410255,23.343087170201766 61.53846153846154,24.64288023797207 62.82051282051282,25.932973357475426 64.1025641025641,25.17637739265391 65.38461538461539,25.632274961200203 66.66666666666666,26.340371184687022 67.94871794871796,25.991173047077083 69.23076923076923,25.991173047077083 70.51282051282051,25.506175633729956 71.7948717948718,23.847484480082777 73.07692307692307,19.889905587170208 74.35897435897436,18.929610708742896 75.64102564102564,19.016910243145375 76.92307692307693,20.869600362131408 78.2051282051282,19.38550827728919 79.48717948717949,19.230309105018108 80.76923076923077,18.968410501810663 82.05128205128204,18.881110967408183 83.33333333333334,18.822911277806526 84.61538461538461,19.61830703569581 85.8974358974359,20.69500129332644 87.17948717948718,17.523118210036223 88.46153846153845,15.554028711846872 89.74358974358975,14.99143171236421 91.02564102564102,15.592828504914642 92.3076923076923,13.46853983445422 93.58974358974359,13.924437403000525 94.87179487179486,12.537344800827732 96.15384615384616,11.838948525607872 97.43589743589743,13.711038541127785 98.71794871794873,13.390940248318682 100.0,15.282430160372485" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>INDIAGLYCO.NS</td>
+          <td>4</td>
+          <td>₹1254.65</td>
+          <td>₹5018.60</td>
+          <td>₹5687.20</td>
+          <td>
+            <span class="text-green">₹668.60</span>
+            <span class="pnl-badge pnl-up arrow-up">13.3%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="19.749252363614858" x2="100" y2="19.749252363614858" class="reference-line" />
+        <polyline points="0.0,18.02882649416425 1.282051282051282,17.473087553516965 2.564102564102564,17.100624220955496 3.8461538461538463,16.122168958432894 5.128205128205128,19.888187098776687 6.41025641025641,15.025471368113003 7.6923076923076925,19.0486665714159 8.974358974358974,19.341316332714207 10.256410256410255,16.61878673518153 11.538461538461538,21.87465820577121 12.82051282051282,17.473087553516965 14.102564102564102,19.02206204766151 15.384615384615385,18.481103397988903 16.666666666666664,15.202834859808945 17.94871794871795,10.328294896365527 19.230769230769234,13.93468589418297 20.51282051282051,15.862035837278842 21.794871794871796,16.32909303207816 23.076923076923077,19.181689190187857 24.358974358974358,22.655057569233346 25.64102564102564,23.674897646485 26.923076923076923,20.80752119740064 28.205128205128204,19.654658501377032 29.48717948717949,18.383553477556127 30.76923076923077,17.990397737630122 32.05128205128205,14.428347612736662 33.33333333333333,10.313514605390864 34.61538461538461,12.829120129278277 35.8974358974359,12.917801875126248 37.17948717948718,15.465924039157922 38.46153846153847,18.277135382538567 39.743589743589745,21.97220812620398 41.02564102564102,22.15252767609485 42.30769230769231,22.545683416020857 43.58974358974359,25.844644361565337 44.871794871794876,27.993698669281134 46.15384615384615,30.28464377035369 47.43589743589743,25.43375227246974 48.717948717948715,24.815936109728877 50.0,25.679105102649125 51.28205128205128,27.636015627694324 52.56410256410257,27.41135520487947 53.84615384615385,29.338705147975343 55.12820512820513,31.80701374074384 56.41025641025641,31.898651544786738 57.692307692307686,29.47468382494223 58.97435897435898,27.14530996733556 60.256410256410255,26.32943790553424 61.53846153846154,26.633911899612258 62.82051282051282,28.552393668123347 64.1025641025641,28.159237928197342 65.38461538461539,28.679504170505442 66.66666666666666,30.586161706236794 67.94871794871796,29.149517423499674 69.23076923076923,29.149517423499674 70.51282051282051,27.760170071881475 71.7948717948718,28.67359205411557 73.07692307692307,30.22256654826011 74.35897435897436,29.619530676493916 75.64102564102564,30.562513240677333 76.92307692307693,31.026614377281703 78.2051282051282,29.18499012183887 79.48717948717949,28.31295295433383 80.76923076923077,25.794391372251475 82.05128205128204,24.23063658713228 83.33333333333334,19.49503135885068 84.61538461538461,21.70616288866007 85.8974358974359,25.055376823518394 87.17948717948718,23.012740610820156 88.46153846153845,21.74163558699925 89.74358974358975,18.89790760347436 91.02564102564102,12.52169007700531 92.3076923076923,13.609519492740414 93.58974358974359,9.713434791819594 94.87179487179486,9.636577278751357 96.15384615384616,9.234553364240561 97.43589743589743,9.890798283515537 98.71794871794873,10.452449340552679 100.0,9.867149817956083" class="sparkline positive" />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>KOTHARIPET.NS</td>
+          <td>25</td>
+          <td>₹187.95</td>
+          <td>₹4698.75</td>
+          <td>₹4072.25</td>
+          <td>
+            <span class="text-red">₹-626.50</span>
+            <span class="pnl-badge pnl-down arrow-down">13.3%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="13.574708561912221" x2="100" y2="13.574708561912221" class="reference-line" />
+        <polyline points="0.0,11.264020865987451 1.282051282051282,8.696181916144198 2.564102564102564,10.099493044670844 3.8461538461538463,8.75495934561128 5.128205128205128,13.200002449059554 6.41025641025641,12.656311226489027 7.6923076923076925,13.8392069945141 8.974358974358974,15.253538891065823 10.256410256410255,17.54585864028213 11.538461538461538,20.602284972570526 12.82051282051282,17.060944847178675 14.102564102564102,17.63769837382445 15.384615384615385,17.578920944357353 16.666666666666664,17.369526351880868 17.94871794871795,14.096358248432594 19.230769230769234,16.92502204153604 20.51282051282051,17.678107856583065 21.794871794871796,16.693585913009393 23.076923076923077,19.595721492946698 24.358974358974358,22.505204251567395 25.64102564102564,23.51544132053291 26.923076923076923,19.412042025862057 28.205128205128204,19.610415850313466 29.48717948717949,18.313638812695913 30.76923076923077,18.769163891065823 32.05128205128205,20.02920503526645 33.33333333333333,17.909543985109707 34.61538461538461,17.498101978840115 35.8974358974359,19.783074549373026 37.17948717948718,19.143870003918487 38.46153846153847,20.40023755877742 39.743589743589745,23.155429565047008 41.02564102564102,25.679185442789958 42.30769230769231,26.869428389498424 43.58974358974359,29.49237117946707 44.871794871794876,30.910376665360495 46.15384615384615,32.11898755877742 47.43589743589743,26.898817104231963 48.717948717948715,24.06647972178683 50.0,26.509416634012524 51.28205128205128,27.18168348354231 52.56410256410257,27.898033405172402 53.84615384615385,29.198484032131656 55.12820512820513,29.59890527037616 56.41025641025641,31.450394298589334 57.692307692307686,32.49369367163009 58.97435897435898,29.87809806034482 60.256410256410255,27.99722031739811 61.53846153846154,26.509416634012524 62.82051282051282,29.529107072884 64.1025641025641,30.616489518025066 65.38461538461539,30.2932136559561 66.66666666666666,30.620163107366757 67.94871794871796,32.280625489811904 69.23076923076923,32.280625489811904 70.51282051282051,28.416009502351084 71.7948717948718,26.527784580720994 73.07692307692307,22.3986701606583 74.35897435897436,19.30183434561127 75.64102564102564,23.27298442398118 76.92307692307693,24.907731681034477 78.2051282051282,22.37295503526645 79.48717948717949,24.790176822100307 80.76923076923077,26.535131759404383 82.05128205128204,26.49472227664576 83.33333333333334,22.203969925548577 84.61538461538461,24.50363685344827 85.8974358974359,26.538805348746074 87.17948717948718,23.849737950626952 88.46153846153845,24.007702292319735 89.74358974358975,23.07461059952977 91.02564102564102,22.47581553683385 92.3076923076923,22.35826067789968 93.58974358974359,23.023180348746074 94.87179487179486,22.17458121081504 96.15384615384616,22.00192251175548 97.43589743589743,23.089304956896537 98.71794871794873,20.525139596394975 100.0,22.78072345219435" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>KOTHARIPRO.NS</td>
+          <td>48</td>
+          <td>₹99.13</td>
+          <td>₹4758.24</td>
+          <td>₹3453.12</td>
+          <td>
+            <span class="text-red">₹-1305.12</span>
+            <span class="pnl-badge pnl-down arrow-down">27.4%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="8.356318985170308" x2="100" y2="8.356318985170308" class="reference-line" />
+        <polyline points="0.0,8.789698214567863 1.282051282051282,8.667810306299799 2.564102564102564,9.135047287994038 3.8461538461538463,9.189219691668733 5.128205128205128,12.378619958016387 6.41025641025641,12.514050967203126 7.6923076923076925,13.103175857165425 8.974358974358974,13.766787802180438 10.256410256410255,15.398731462880615 11.538461538461538,17.999006839265963 12.82051282051282,17.95160598605061 14.102564102564102,17.51145520619371 15.384615384615385,17.62657156400244 16.666666666666664,17.369252646547643 17.94871794871795,15.215899600478522 19.230769230769234,15.114326343588466 20.51282051282051,16.42123558224048 21.794871794871796,16.902015664853394 23.076923076923077,18.046407692481328 24.358974358974358,20.924316637699484 25.64102564102564,21.012346793670858 26.923076923076923,21.65564408730786 28.205128205128204,20.409678802789877 29.48717948717949,19.624178949506806 30.76923076923077,19.278829876080625 32.05128205128205,19.4752048394014 33.33333333333333,19.644493600884818 34.61538461538461,18.919937701735773 35.8974358974359,16.40769248132181 37.17948717948718,14.42362819673611 38.46153846153847,14.85700742613367 39.743589743589745,16.014942554680275 41.02564102564102,15.886283095952866 42.30769230769231,14.762205719702955 43.58974358974359,16.184231316163693 44.871794871794876,16.387377829943798 46.15384615384615,16.44155023361849 47.43589743589743,14.08505067376927 48.717948717948715,17.00358892174345 50.0,19.82732546328691 51.28205128205128,22.515630995643633 52.56410256410257,24.980475362842245 53.84615384615385,27.4724059318782 55.12820512820513,29.774733088052727 56.41025641025641,32.06351714330857 57.692307692307686,32.86933164796966 58.97435897435898,32.51721102408415 60.256410256410255,30.377401078933705 61.53846153846154,28.12247477597454 62.82051282051282,25.759203665665975 64.1025641025641,26.57856127124574 65.38461538461539,27.70941019795499 66.66666666666666,29.158521996253075 67.94871794871796,28.09538857413719 69.23076923076923,28.09538857413719 70.51282051282051,26.226440647360228 71.7948717948718,25.70503126199128 73.07692307692307,25.556057151885874 74.35897435897436,24.716384894928108 75.64102564102564,26.63273367492043 76.92307692307693,27.68909554657698 78.2051282051282,28.04798772092183 79.48717948717949,29.334582308195827 80.76923076923077,27.594293840146264 82.05128205128204,25.271652032593725 83.33333333333334,26.179039794144863 84.61538461538461,27.09319910615534 85.8974358974359,29.71378913391869 87.17948717948718,28.71837121639618 88.46153846153845,28.224048032864587 89.74358974358975,28.684513464099496 91.02564102564102,26.17226824368553 92.3076923076923,24.77732884906214 93.58974358974359,25.691488161072613 94.87179487179486,23.544906665462833 96.15384615384616,24.073087601291107 97.43589743589743,25.50188474821118 98.71794871794873,24.716384894928108 100.0,26.76816468410717" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>MANGCHEFER.NS</td>
+          <td>31</td>
+          <td>₹154.36</td>
+          <td>₹4785.16</td>
+          <td>₹6336.40</td>
+          <td>
+            <span class="text-green">₹1551.24</span>
+            <span class="pnl-badge pnl-up arrow-up">32.4%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="25.835854649919014" x2="100" y2="25.835854649919014" class="reference-line" />
+        <polyline points="0.0,26.089514379144887 1.282051282051282,23.934934751382897 2.564102564102564,23.390941597139445 3.8461538461538463,20.136151095626662 5.128205128205128,22.620793985513888 6.41025641025641,21.10494789279056 7.6923076923076925,21.254698817273308 8.974358974358974,20.628189847498547 10.256410256410255,22.730815072888966 11.538461538461538,25.06876317960942 12.82051282051282,23.262583661868522 14.102564102564102,22.538278169982576 15.384615384615385,20.340912563796948 16.666666666666664,20.264509030897585 17.94871794871795,20.634302130130497 19.230769230769234,19.03288408055988 20.51282051282051,18.837291036337522 21.794871794871796,19.457687723480333 23.076923076923077,20.39286696616852 24.358974358974358,23.65071360899728 25.64102564102564,23.785183826900155 26.923076923076923,23.201460835549035 28.205128205128204,22.65135539867363 29.48717948717949,21.798691971516764 30.76923076923077,21.83536566730846 32.05128205128205,22.336572843128263 33.33333333333333,22.43131322392347 34.61538461538461,20.53650560801932 35.8974358974359,21.633660340454135 37.17948717948718,21.89037621099599 38.46153846153847,23.549860945570117 39.743589743589745,25.799180954127316 41.02564102564102,26.51431802206534 42.30769230769231,24.763149048011975 43.58974358974359,26.11701965098866 44.871794871794876,27.400599003697923 46.15384615384615,27.1652761223679 47.43589743589743,28.335778246386106 48.717948717948715,28.427462485865345 50.0,28.580269551664067 51.28205128205128,29.756883958314226 52.56410256410257,28.60777482350784 53.84615384615385,31.03129488707557 55.12820512820513,32.89554108981999 56.41025641025641,32.99944989456312 57.692307692307686,31.712814400537876 58.97435897435898,30.27948412334586 60.256410256410255,30.606491244155123 61.53846153846154,30.193912166498578 62.82051282051282,30.086947220439473 64.1025641025641,30.98239662601998 65.38461538461539,30.160294612022852 66.66666666666666,29.466550533296658 67.94871794871796,29.038690749060233 69.23076923076923,29.038690749060233 70.51282051282051,27.571742917392495 71.7948717948718,28.00571498426087 73.07692307692307,27.51978851502093 74.35897435897436,26.159805629412297 75.64102564102564,26.743528620763424 76.92307692307693,26.50820573943339 78.2051282051282,26.33094954310687 79.48717948717949,25.438556278842334 80.76923076923077,23.772959261636252 82.05128205128204,21.96983588521133 83.33333333333334,17.159469453867548 84.61538461538461,18.48889092631643 85.8974358974359,19.387396473212917 87.17948717948718,15.784205861679041 88.46153846153845,17.941841630757004 89.74358974358975,15.334953088230797 91.02564102564102,13.406527917850923 92.3076923076923,13.397359493902997 93.58974358974359,12.92060144861098 94.87179487179486,11.994590629870725 96.15384615384616,12.917545307295011 97.43589743589743,11.808166009596285 98.71794871794873,8.238592952538127 100.0,10.54292350478286" class="sparkline positive" />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>MAZDA.NS</td>
+          <td>15</td>
+          <td>₹298.61</td>
+          <td>₹4479.15</td>
+          <td>₹3748.50</td>
+          <td>
+            <span class="text-red">₹-730.65</span>
+            <span class="pnl-badge pnl-down arrow-down">16.3%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="22.468524614049848" x2="100" y2="22.468524614049848" class="reference-line" />
+        <polyline points="0.0,22.253942287950935 1.282051282051282,20.766436410117162 2.564102564102564,20.97572040717659 3.8461538461538463,19.82465842334974 5.128205128205128,21.18632898649588 6.41025641025641,15.93833407289176 7.6923076923076925,13.299766211231137 8.974358974358974,16.183381790967676 10.256410256410255,9.835983601671622 11.538461538461538,15.05748687007835 12.82051282051282,12.342093237345274 14.102564102564102,12.902391533270197 15.384615384615385,7.715327403620087 16.666666666666664,10.022749700313266 17.94871794871795,13.168632567504027 19.230769230769234,13.722307952129597 20.51282051282051,14.866747024657098 21.794871794871796,14.76342960838726 23.076923076923077,16.159539310290015 24.358974358974358,17.968918677272157 25.64102564102564,15.880052453457488 26.923076923076923,16.919849527455277 28.205128205128204,17.588763568689526 29.48717948717949,19.456424555105933 30.76923076923077,18.97957494155281 32.05128205128205,21.11877529124252 33.33333333333333,21.53601870310151 34.61538461538461,20.734646435880286 35.8974358974359,20.443238338708934 37.17948717948718,21.43667503361128 38.46153846153847,23.25135272963289 39.743589743589745,25.185242829042785 41.02564102564102,25.96674636236597 42.30769230769231,27.648965832400606 43.58974358974359,29.000039737467795 44.871794871794876,30.470326045923265 46.15384615384615,31.390910716532773 47.43589743589743,29.861018206383157 48.717948717948715,29.43715188322483 50.0,30.357736553834332 51.28205128205128,31.357796160036028 52.56410256410257,31.503500208621706 53.84615384615385,31.33130451483863 55.12820512820513,32.26513500804683 56.41025641025641,33.5777960275778 57.692307692307686,32.35388201945811 58.97435897435898,32.34196077911928 60.256410256410255,31.393559881052514 61.53846153846154,30.094144684120245 62.82051282051282,31.234610009868135 64.1025641025641,31.565755574835585 65.38461538461539,30.854454901285504 66.66666666666666,31.08493221450285 67.94871794871796,32.48634024544509 69.23076923076923,32.48634024544509 70.51282051282051,30.882271128742772 71.7948717948718,29.332509884695114 73.07692307692307,28.670218754760217 74.35897435897436,27.006543436363753 75.64102564102564,27.76950281804876 76.92307692307693,28.45563642866131 78.2051282051282,29.127199634415295 79.48717948717949,29.785517017570584 80.76923076923077,30.429263995867302 82.05128205128204,30.49681769112066 83.33333333333334,29.86631653542264 84.61538461538461,29.702068335198785 85.8974358974359,30.348464478015245 87.17948717948718,30.654442980045168 88.46153846153845,31.02665059506858 89.74358974358975,31.02665059506858 91.02564102564102,30.406746097449513 92.3076923076923,29.774920359491627 93.58974358974359,29.131173381194905 94.87179487179486,28.474180580299485 96.15384615384616,27.803941956805375 97.43589743589743,28.112569623355036 98.71794871794873,28.245027849342012 100.0,28.920564801875607" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>MONTECARLO.NS</td>
+          <td>6</td>
+          <td>₹810.82</td>
+          <td>₹4864.92</td>
+          <td>₹3593.40</td>
+          <td>
+            <span class="text-red">₹-1271.52</span>
+            <span class="pnl-badge pnl-down arrow-down">26.1%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="8.446890095891018" x2="100" y2="8.446890095891018" class="reference-line" />
+        <polyline points="0.0,9.184033657504575 1.282051282051282,9.39658947111863 2.564102564102564,9.1330202622372 3.8461538461538463,10.688928817892101 5.128205128205128,14.812511602004829 6.41025641025641,12.300101885086665 7.6923076923076925,13.634952394582953 8.974358974358974,16.240886669491303 10.256410256410255,18.42170931717154 11.538461538461538,21.69931996310031 12.82051282051282,20.011626803004695 14.102564102564102,20.53451410449528 15.384615384615385,19.998873454187844 16.666666666666664,20.687554290297395 17.94871794871795,20.883105638822336 19.230769230769234,20.568523034673525 20.51282051282051,21.14242373143148 21.794871794871796,20.925616801545146 23.076923076923077,20.168918105079094 24.358974358974358,22.473023124655484 25.64102564102564,21.00638801071848 26.923076923076923,20.30070270951981 28.205128205128204,19.573761826959732 29.48717948717949,18.906336572211593 30.76923076923077,18.706534107414377 32.05128205128205,18.89783433966703 33.33333333333333,19.237923641449527 34.61538461538461,17.048598761224724 35.8974358974359,16.81903848252154 37.17948717948718,18.413207084626976 38.46153846153847,19.99462233791557 39.743589743589745,20.224182616618755 41.02564102564102,20.968127964267957 42.30769230769231,22.575049915190235 43.58974358974359,24.326509819370074 44.871794871794876,25.546580189514764 46.15384615384615,25.882418375024976 47.43589743589743,23.24247516993838 48.717948717948715,23.33599972792856 50.0,24.581576795706944 51.28205128205128,25.23199758536596 52.56410256410257,26.29902776970853 53.84615384615385,28.764675207631605 55.12820512820513,29.793445345523644 56.41025641025641,31.60016976124314 57.692307692307686,31.64693204023823 58.97435897435898,29.313069206755877 60.256410256410255,26.630614838946457 61.53846153846154,26.860175117649646 62.82051282051282,28.314056882769805 64.1025641025641,29.287562509122182 65.38461538461539,30.482126181633195 66.66666666666666,30.074019019494198 67.94871794871796,30.936995622767284 69.23076923076923,30.936995622767284 70.51282051282051,30.14628799612298 71.7948717948718,29.886969903513833 73.07692307692307,31.264331575732925 74.35897435897436,28.73916850999792 75.64102564102564,30.324834879558793 76.92307692307693,31.353605017450835 78.2051282051282,32.26759501599128 79.48717948717949,32.72671557339765 80.76923076923077,31.710698784322446 82.05128205128204,30.592655204712504 83.33333333333334,28.88795757952776 84.61538461538461,30.01450339168227 85.8974358974359,32.76922673612046 87.17948717948718,30.945497855311835 88.46153846153845,30.16329246121211 89.74358974358975,29.134522323320066 91.02564102564102,28.280047952591556 92.3076923076923,27.816676278912908 93.58974358974359,28.360819161764894 94.87179487179486,27.544604837486908 96.15384615384616,27.638129395477094 97.43589743589743,25.27875986436105 98.71794871794873,26.03970967709938 100.0,26.4648213043275" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>NATIONALUM.NS</td>
+          <td>23</td>
+          <td>₹210.67</td>
+          <td>₹4845.41</td>
+          <td>₹3599.50</td>
+          <td>
+            <span class="text-red">₹-1245.91</span>
+            <span class="pnl-badge pnl-down arrow-down">25.7%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="9.145022957636673" x2="100" y2="9.145022957636673" class="reference-line" />
+        <polyline points="0.0,10.319760894048347 1.282051282051282,9.495018626007113 2.564102564102564,8.673741661613104 3.8461538461538463,11.577666117993594 5.128205128205128,14.263276444598457 6.41025641025641,12.29844927661787 7.6923076923076925,12.80438360911375 8.974358974358974,14.537035432729791 10.256410256410255,13.525166767738025 11.538461538461538,17.139478471801095 12.82051282051282,14.457333448843457 14.102564102564102,15.916226284328168 15.384615384615385,14.755349562505423 16.666666666666664,12.409338993329293 17.94871794871795,10.711340206185572 19.230769230769234,12.277657454734474 20.51282051282051,13.123191544659104 21.794871794871796,12.32270640214849 23.076923076923077,13.206358832192677 24.358974358974358,15.153859481937104 25.64102564102564,17.84293511218921 26.923076923076923,16.397903491293423 28.205128205128204,16.619682924716283 29.48717948717949,13.532097375032492 30.76923076923077,15.004851425106132 32.05128205128205,17.84293511218921 33.33333333333333,15.687516243610851 34.61538461538461,14.41228450142944 35.8974358974359,15.3479164861821 37.17948717948718,14.124664298709174 38.46153846153847,17.326604868751627 39.743589743589745,19.953305033353555 41.02564102564102,17.79095555748073 42.30769230769231,17.18799272286234 43.58974358974359,19.20826474919865 44.871794871794876,19.516676773802303 46.15384615384615,19.922117300528463 47.43589743589743,17.31967426145716 48.717948717948715,15.237026769470678 50.0,12.492506280862866 51.28205128205128,16.4706748678853 52.56410256410257,19.49935025556615 53.84615384615385,19.99488867712033 55.12820512820513,20.604782119033185 56.41025641025641,19.984492766178644 57.692307692307686,20.091917179242827 58.97435897435898,16.553842155418874 60.256410256410255,15.340985878887643 61.53846153846154,14.51624361084641 62.82051282051282,16.959282682145023 64.1025641025641,16.40829940223512 65.38461538461539,15.774148834791653 66.66666666666666,17.045915273325825 67.94871794871796,18.030061509139742 69.23076923076923,18.030061509139742 70.51282051282051,17.56224551676341 71.7948717948718,16.110283288573168 73.07692307692307,17.860261630425367 74.35897435897436,17.333535476046094 75.64102564102564,19.544399202980166 76.92307692307693,20.036472320887118 78.2051282051282,20.1854803777181 79.48717948717949,21.322099974010225 80.76923076923077,21.4052672615438 82.05128205128204,21.779520055444856 83.33333333333334,22.316642120765835 84.61538461538461,27.500736377025042 85.8974358974359,32.00909642207399 87.17948717948718,31.34029281815819 88.46153846153845,32.438794074330765 89.74358974358975,32.5184960582171 91.02564102564102,29.676947067486793 92.3076923076923,29.74625314043143 93.58974358974359,29.167547431343678 94.87179487179486,26.215108723901935 96.15384615384616,27.123018279476742 97.43589743589743,25.986398683184618 98.71794871794873,26.000259897773542 100.0,27.916572814692888" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>NAVA.NS</td>
+          <td>10</td>
+          <td>₹495.13</td>
+          <td>₹4951.30</td>
+          <td>₹4791.50</td>
+          <td>
+            <span class="text-red">₹-159.80</span>
+            <span class="pnl-badge pnl-down arrow-down">3.2%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="13.479083797002872" x2="100" y2="13.479083797002872" class="reference-line" />
+        <polyline points="0.0,13.608871210027278 1.282051282051282,12.776789684304134 2.564102564102564,12.629697282876478 3.8461538461538463,14.766863350678381 5.128205128205128,18.869587684616587 6.41025641025641,15.78785766647038 7.6923076923076925,17.085731796714455 8.974358974358974,18.253818513934124 10.256410256410255,20.693821878792974 11.538461538461538,24.18654537151647 12.82051282051282,23.502998329587925 14.102564102564102,21.87344525494814 15.384615384615385,21.26344441373343 16.666666666666664,22.316164541598063 17.94871794871795,21.89796065518609 19.230769230769234,23.46262002331367 20.51282051282051,23.960138439907226 21.794871794871796,20.859661350990834 23.076923076923077,22.006116832706425 24.358974358974358,25.04891062694531 25.64102564102564,26.404468051866893 26.923076923076923,21.926802302524845 28.205128205128204,22.453162366457168 29.48717948717949,21.220181942725297 30.76923076923077,21.984485597202365 32.05128205128205,22.87136625286914 33.33333333333333,22.75599966351411 34.61538461538461,22.482004013795923 35.8974358974359,21.35717976758439 37.17948717948718,23.736615673031856 38.46153846153847,26.65683246608102 39.743589743589745,29.425630610601704 41.02564102564102,29.656363789311765 42.30769230769231,30.975869155059904 43.58974358974359,32.37468905098962 44.871794871794876,28.06286277384543 46.15384615384615,30.319721678103175 47.43589743589743,23.844771850552196 48.717948717948715,24.81817744823525 50.0,26.33236393352 51.28205128205128,26.916407292129833 52.56410256410257,25.142645980796267 53.84615384615385,25.14985639263096 55.12820512820513,27.50045065073967 56.41025641025641,29.101162078040687 57.692307692307686,29.634732553807694 58.97435897435898,24.9840169204331 60.256410256410255,21.335548532080324 61.53846153846154,21.508598416112868 62.82051282051282,23.549144965329933 64.1025641025641,24.75328374172305 65.38461538461539,25.82042469325706 66.66666666666666,26.577517935899436 67.94871794871796,25.59690192638169 69.23076923076923,25.59690192638169 70.51282051282051,20.499140759256367 71.7948717948718,17.636607260884716 73.07692307692307,15.985422950740869 74.35897435897436,14.939913234710922 75.64102564102564,17.066984725944263 76.92307692307693,13.916034754185041 78.2051282051282,13.447357984930235 79.48717948717949,10.072885246295652 80.76923076923077,8.803852763390342 82.05128205128204,9.11390047228198 83.33333333333334,9.178794178794174 84.61538461538461,13.447357984930235 85.8974358974359,18.1197048538089 87.17948717948718,17.449136553182793 88.46153846153845,19.071479215987885 89.74358974358975,14.87501952819872 91.02564102564102,14.125136697391039 92.3076923076923,15.293223414610697 93.58974358974359,17.103036785117713 94.87179487179486,15.379748356626969 96.15384615384616,14.774073762513073 97.43589743589743,13.843930635838149 98.71794871794873,17.167930491629914 100.0,15.783531419369574" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>NITINSPIN.NS</td>
+          <td>11</td>
+          <td>₹433.95</td>
+          <td>₹4773.45</td>
+          <td>₹4023.25</td>
+          <td>
+            <span class="text-red">₹-750.20</span>
+            <span class="pnl-badge pnl-down arrow-down">15.7%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="10.834443544067359" x2="100" y2="10.834443544067359" class="reference-line" />
+        <polyline points="0.0,9.318147481767369 1.282051282051282,8.683610542652694 2.564102564102564,10.018610336634211 3.8461538461538463,11.221758299111375 5.128205128205128,15.589350217692864 6.41025641025641,13.974165281764623 7.6923076923076925,16.075553846365153 8.974358974358974,16.808979659108083 10.256410256410255,17.377590682470576 11.538461538461538,18.2593498056559 12.82051282051282,16.281572333090693 14.102564102564102,15.803609443887431 15.384615384615385,16.528794517161344 16.666666666666664,16.561757475037428 17.94871794871795,14.328517078932549 19.230769230769234,14.97953549698526 20.51282051282051,16.776016701231995 21.794871794871796,15.778887225480368 23.076923076923077,18.135738713620572 24.358974358974358,21.374349324946095 25.64102564102564,18.72907195539013 26.923076923076923,17.929720226895032 28.205128205128204,17.707220261231445 29.48717948717949,14.122498592207009 30.76923076923077,16.561757475037428 32.05128205128205,16.462868601409166 33.33333333333333,17.352868464063512 34.61538461538461,16.190924198931455 35.8974358974359,17.575368429727092 37.17948717948718,18.284072024062958 38.46153846153847,20.278330975566213 39.743589743589745,22.239626969193367 41.02564102564102,25.00851543078466 42.30769230769231,24.736571028306933 43.58974358974359,26.879163290252574 44.871794871794876,26.739070719279212 46.15384615384615,30.31555164883462 47.43589743589743,29.705736928127017 48.717948717948715,28.34601491573844 50.0,29.15360738370256 51.28205128205128,28.90638519963191 52.56410256410257,29.623329533436802 53.84615384615385,30.76055158016179 55.12820512820513,31.617588484940043 56.41025641025641,32.50758834759439 57.692307692307686,31.798884753258523 58.97435897435898,26.318793006359105 60.256410256410255,25.585367193616175 61.53846153846154,25.066200607067806 62.82051282051282,27.0769410375091 64.1025641025641,26.994533642818887 65.38461538461539,28.024626076446594 66.66666666666666,29.41731104671126 67.94871794871796,29.08768146795039 69.23076923076923,29.08768146795039 70.51282051282051,26.706107761403125 71.7948717948718,26.82971885343845 73.07692307692307,25.140367262289004 74.35897435897436,24.25036739963466 75.64102564102564,26.343515224766165 76.92307692307693,28.65092227609224 78.2051282051282,29.606848054498755 79.48717948717949,29.77990358334821 80.76923076923077,27.96694090016344 82.05128205128204,27.596107624057463 83.33333333333334,22.52805285060913 84.61538461538461,24.11851556813031 85.8974358974359,27.0769410375091 87.17948717948718,26.079811561757477 88.46153846153845,24.7200895493689 89.74358974358975,23.98666373662597 91.02564102564102,21.96768256671566 92.3076923076923,21.901756650963478 93.58974358974359,21.489719677512394 94.87179487179486,22.04184922193685 96.15384615384616,20.583238335920008 97.43589743589743,19.693238473265673 98.71794871794873,20.34425689131838 100.0,22.074812179812934" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>RANEHOLDIN.NS</td>
+          <td>3</td>
+          <td>₹1748.91</td>
+          <td>₹5246.73</td>
+          <td>₹3884.70</td>
+          <td>
+            <span class="text-red">₹-1362.03</span>
+            <span class="pnl-badge pnl-down arrow-down">26.0%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="10.237117648194513" x2="100" y2="10.237117648194513" class="reference-line" />
+        <polyline points="0.0,9.46330774131684 1.282051282051282,9.06559107261225 2.564102564102564,8.465154742674741 3.8461538461538463,8.766338239363652 5.128205128205128,11.950002252440683 6.41025641025641,10.573439219497125 7.6923076923076925,11.44609909451885 8.974358974358974,12.633457110311678 10.256410256410255,14.627832444155555 11.538461538461538,18.96024120421914 12.82051282051282,13.087163018785361 14.102564102564102,15.515937626699785 15.384615384615385,14.523576618378627 16.666666666666664,15.676182692245813 17.94871794871795,16.238005753377053 19.230769230769234,17.826941764755098 20.51282051282051,18.49302065166327 21.794871794871796,19.14751555792955 23.076923076923077,21.45272770566392 24.358974358974358,22.750133537554625 25.64102564102564,23.611209431934462 26.923076923076923,19.19385148049708 28.205128205128204,21.230701410027862 29.48717948717949,21.819553759323494 30.76923076923077,21.76549518299472 32.05128205128205,22.246230379632784 33.33333333333333,22.170934505460565 34.61538461538461,22.50300861719449 35.8974358974359,24.71361825635349 37.17948717948718,22.518453924717 38.46153846153847,22.74241088379337 39.743589743589745,25.694395284032773 41.02564102564102,25.619099409860546 42.30769230769231,27.148184854588862 43.58974358974359,27.072888980416636 44.871794871794876,25.922213569989765 46.15384615384615,27.0535823460135 47.43589743589743,26.706062926757063 48.717948717948715,27.391448448068367 50.0,28.267969649970716 51.28205128205128,26.76977482028741 52.56410256410257,27.49763493728561 53.84615384615385,28.47455063808427 55.12820512820513,31.413020394241475 56.41025641025641,32.749039494938444 57.692307692307686,31.75667848661729 58.97435897435898,28.09807126722313 60.256410256410255,26.661657667629854 61.53846153846154,26.549679188091666 62.82051282051282,28.507371916569596 64.1025641025641,27.58451479209972 65.38461538461539,28.928256546557954 66.66666666666666,30.021012053775415 67.94871794871796,28.82400072078102 69.23076923076923,28.82400072078102 70.51282051282051,28.036290037133092 71.7948717948718,27.64629602218976 73.07692307692307,26.18092247099178 74.35897435897436,26.700270936436127 75.64102564102564,26.26780232580589 76.92307692307693,28.918603229356385 78.2051282051282,29.044096352976766 79.48717948717949,28.503510589688975 80.76923076923077,27.50728825448718 82.05128205128204,26.74274553212302 83.33333333333334,26.700270936436127 84.61538461538461,29.4630503195248 85.8974358974359,28.756427500370044 87.17948717948718,28.462966657442383 88.46153846153845,28.74870484660879 89.74358974358975,27.46481365880029 91.02564102564102,25.570832823852705 92.3076923076923,22.74434154723368 93.58974358974359,23.91046226518306 94.87179487179486,23.07255433208698 96.15384615384616,23.690366632987313 97.43589743589743,23.82551307380926 98.71794871794873,25.119057578819337 100.0,27.767927818929508" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>RPPINFRA.NS</td>
+          <td>25</td>
+          <td>₹194.00</td>
+          <td>₹4850.00</td>
+          <td>₹4097.50</td>
+          <td>
+            <span class="text-red">₹-752.50</span>
+            <span class="pnl-badge pnl-down arrow-down">15.5%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="10.572280142278913" x2="100" y2="10.572280142278913" class="reference-line" />
+        <polyline points="0.0,10.525180915000611 1.282051282051282,10.201373727462283 2.564102564102564,9.477223108058382 3.8461538461538463,7.9847663436771725 5.128205128205128,10.969679872439588 6.41025641025641,11.902833312890959 7.6923076923076925,13.018496259045751 8.974358974358974,14.375542745001834 10.256410256410255,15.803238071875384 11.538461538461538,17.925647001103883 12.82051282051282,15.676658898564945 14.102564102564102,15.090862259291058 15.384615384615385,14.563939654115046 16.666666666666664,15.461768674107692 17.94871794871795,13.8633386483503 19.230769230769234,13.56308107445112 20.51282051282051,15.394063534895125 21.794871794871796,15.57068563718876 23.076923076923077,17.20738378510977 24.358974358974358,19.459315589353608 25.64102564102564,19.29152459217466 26.923076923076923,16.886520299276334 28.205128205128204,15.44705016558322 29.48717948717949,14.425585673985033 30.76923076923077,15.626615969581742 32.05128205128205,17.763743407334726 33.33333333333333,16.86591438734208 34.61538461538461,15.77968845823623 35.8974358974359,16.62453084754078 37.17948717948718,17.20738378510977 38.46153846153847,17.899153685759835 39.743589743589745,19.058972157488043 41.02564102564102,20.934110143505453 42.30769230769231,21.60527413222126 43.58974358974359,23.910192567153196 44.871794871794876,26.050263706611066 46.15384615384615,28.134404513675946 47.43589743589743,26.347577578805346 48.717948717948715,26.51831227768919 50.0,27.109996320372872 51.28205128205128,29.111713479700718 52.56410256410257,30.3304059855268 53.84615384615385,31.934723414693973 55.12820512820513,33.27999509383049 56.41025641025641,32.56173187783638 57.692307692307686,30.80728566171961 58.97435897435898,28.964528394456025 60.256410256410255,27.03051637434073 61.53846153846154,24.999362197963933 62.82051282051282,27.03051637434073 64.1025641025641,26.3210842634613 65.38461538461539,28.11968600515148 66.66666666666666,27.27189991414203 67.94871794871796,28.184447442659145 69.23076923076923,28.184447442659145 70.51282051282051,24.996418496259047 71.7948717948718,25.953121550349564 73.07692307692307,25.67641359008954 74.35897435897436,25.06117993376671 75.64102564102564,24.884557831473074 76.92307692307693,24.31936710413344 78.2051282051282,26.141518459462766 79.48717948717949,27.25129400220777 80.76923076923077,25.26429535140439 82.05128205128204,23.14483012388078 83.33333333333334,20.91939163498099 84.61538461538461,21.154887771372493 85.8974358974359,23.483355819943583 87.17948717948718,21.53462529130382 88.46153846153845,22.826910339752235 89.74358974358975,21.449257941861887 91.02564102564102,20.162860296823254 92.3076923076923,20.725107322457994 93.58974358974359,21.09307003556973 94.87179487179486,19.03836624555378 96.15384615384616,16.60686863731142 97.43589743589743,17.975689930087086 98.71794871794873,16.892407702686125 100.0,19.432822274009567" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>SRHHYPOLTD.NS</td>
+          <td>6</td>
+          <td>₹778.50</td>
+          <td>₹4671.00</td>
+          <td>₹3168.90</td>
+          <td>
+            <span class="text-red">₹-1502.10</span>
+            <span class="pnl-badge pnl-down arrow-down">32.2%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="8.433845409784311" x2="100" y2="8.433845409784311" class="reference-line" />
+        <polyline points="0.0,8.570876799376645 1.282051282051282,8.345178040048097 2.564102564102564,8.381451054940186 3.8461538461538463,8.151721960623629 5.128205128205128,9.691309926043356 6.41025641025641,8.22829832539582 7.6923076923076925,8.50236110458048 8.974358974358974,10.384527543981037 10.256410256410255,13.645068549280921 11.538461538461538,17.304612718393777 12.82051282051282,13.133216005803682 14.102564102564102,15.571568673549582 15.384615384615385,14.60428827642724 16.666666666666664,15.31765756930497 17.94871794871795,14.559954591559137 19.230769230769234,16.611395100456107 20.51282051282051,17.695555212230722 21.794871794871796,16.022966192206678 23.076923076923077,17.37715874817796 24.358974358974358,20.238696589664883 25.64102564102564,20.609487408561773 26.923076923076923,18.981232073405838 28.205128205128204,16.804851179880572 29.48717948717949,16.409878351055617 30.76923076923077,17.618978847458543 32.05128205128205,19.517266626811132 33.33333333333333,18.57416823961685 34.61538461538461,16.123724566906922 35.8974358974359,15.700539393165897 37.17948717948718,16.466303040887748 38.46153846153847,17.89707196163121 39.743589743589745,21.101188277098963 41.02564102564102,20.133907879976626 42.30769230769231,21.13746129199106 43.58974358974359,23.076052421223743 44.871794871794876,27.706907322446952 46.15384615384615,29.218282942950612 47.43589743589743,27.34014683853806 48.717948717948715,26.006105957506836 50.0,27.223267123885783 51.28205128205128,26.783960610192715 52.56410256410257,26.860536974964905 53.84615384615385,29.66565012661969 55.12820512820513,30.536202484029797 56.41025641025641,31.652605275708503 57.692307692307686,32.10400279436559 58.97435897435898,29.887318550960227 60.256410256410255,29.24649528786668 61.53846153846154,28.750764084341476 62.82051282051282,30.858629283070577 64.1025641025641,31.434967186355976 65.38461538461539,31.273753786835584 66.66666666666666,31.32614814167971 67.94871794871796,33.09546520141599 69.23076923076923,33.09546520141599 70.51282051282051,28.641945039665217 71.7948717948718,29.415769357363082 73.07692307692307,28.97243250868201 74.35897435897436,28.920038153837886 75.64102564102564,29.44801203726717 76.92307692307693,30.830416938154514 78.2051282051282,29.907470225900276 79.48717948717949,31.49945254616413 80.76923076923077,30.306473389713247 82.05128205128204,29.79865118122401 83.33333333333334,29.34322332757891 84.61538461538461,31.128661727267232 85.8974358974359,32.6440676827589 87.17948717948718,31.584089580912334 88.46153846153845,31.447058191320004 89.74358974358975,30.935205647842764 91.02564102564102,28.400124940384632 92.3076923076923,27.71899832741098 93.58974358974359,27.731089332375007 94.87179487179486,27.170872769041658 96.15384615384616,27.50942090803447 97.43589743589743,27.678694977530885 98.71794871794873,26.513928165996063 100.0,28.61373269474915" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>SUKHJITS.NS</td>
+          <td>18</td>
+          <td>₹264.75</td>
+          <td>₹4765.50</td>
+          <td>₹3797.82</td>
+          <td>
+            <span class="text-red">₹-967.68</span>
+            <span class="pnl-badge pnl-down arrow-down">20.3%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="11.189851859861584" x2="100" y2="11.189851859861584" class="reference-line" />
+        <polyline points="0.0,10.730293036332178 1.282051282051282,8.702827638408301 2.564102564102564,9.000189230103796 3.8461538461538463,9.41919874567473 5.128205128205128,13.541711721453279 6.41025641025641,13.109185769896197 7.6923076923076925,13.095669333910031 8.974358974358974,14.812256704152247 10.256410256410255,16.70455774221453 11.538461538461538,18.475210856401375 12.82051282051282,18.137299956747395 14.102564102564102,16.947853589965398 15.384615384615385,15.190716911764703 16.666666666666664,16.258515354671275 17.94871794871795,14.06885272491349 19.230769230769234,14.258082828719715 20.51282051282051,15.93412089100346 21.794871794871796,16.52884407439446 23.076923076923077,16.947853589965398 24.358974358974358,20.15124891868512 25.64102564102564,22.868052551903105 26.923076923076923,22.881568987889267 28.205128205128204,22.259812932525943 29.48717948717949,21.408277465397923 30.76923076923077,22.032736807958475 32.05128205128205,21.14065203287197 33.33333333333333,19.780898572664356 34.61538461538461,19.46731725778546 35.8974358974359,21.15416846885813 37.17948717948718,21.88946258650519 38.46153846153847,20.210721237024217 39.743589743589745,26.166062932525946 41.02564102564102,26.741863105536325 42.30769230769231,23.049172794117645 43.58974358974359,26.576962586505182 44.871794871794876,25.674064662629753 46.15384615384615,27.66638732698961 47.43589743589743,26.25797469723183 48.717948717948715,26.887840614186842 50.0,26.982455666089958 51.28205128205128,27.663684039792383 52.56410256410257,28.742295631487885 53.84615384615385,29.56139165224913 55.12820512820513,31.36448421280276 56.41025641025641,32.27819528546712 57.692307692307686,32.48634839965398 58.97435897435898,30.412927119377162 60.256410256410255,30.175037846020754 61.53846153846154,30.258839749134943 62.82051282051282,32.09437175605536 64.1025641025641,31.52397815743944 65.38461538461539,30.43725670415224 66.66666666666666,30.388597534602074 67.94871794871796,31.248242863321792 69.23076923076923,31.248242863321792 70.51282051282051,29.996620891003452 71.7948717948718,30.442663278546707 73.07692307692307,29.380271410034595 74.35897435897436,29.639786980968854 75.64102564102564,31.418549956747402 76.92307692307693,31.975427119377155 78.2051282051282,31.042793036332174 79.48717948717949,30.072312932525946 80.76923076923077,29.74251189446366 82.05128205128204,29.60194096020761 83.33333333333334,29.285656358131483 84.61538461538461,29.74521518166089 85.8974358974359,31.54830774221453 87.17948717948718,29.461370025951553 88.46153846153845,30.13719182525951 89.74358974358975,29.62356725778546 91.02564102564102,27.52581639273356 92.3076923076923,27.033818122837367 93.58974358974359,22.273329368512105 94.87179487179486,21.329882136678194 96.15384615384616,21.79484753460207 97.43589743589743,22.59502054498269 98.71794871794873,23.11945826124567 100.0,25.722723832179923" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>TGVSL.BO</td>
+          <td>47</td>
+          <td>₹104.50</td>
+          <td>₹4911.50</td>
+          <td>₹4708.46</td>
+          <td>
+            <span class="text-red">₹-203.04</span>
+            <span class="pnl-badge pnl-down arrow-down">4.1%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="17.080743868304957" x2="100" y2="17.080743868304957" class="reference-line" />
+        <polyline points="0.0,14.376630769960641 1.282051282051282,12.289245220361515 2.564102564102564,13.095735091797533 3.8461538461538463,13.902224963233568 5.128205128205128,13.807343801888145 6.41025641025641,10.296740832107794 7.6923076923076925,11.150671284216532 8.974358974358974,13.997106124578977 10.256410256410255,17.17562502965037 11.538461538461538,23.864746904502127 12.82051282051282,20.211822192703643 14.102564102564102,18.64628303050431 15.384615384615385,16.13193225485081 16.666666666666664,15.847288770814568 17.94871794871795,14.234309027942516 19.230769230769234,16.416575738887055 20.51282051282051,17.365387352341198 21.794871794871796,17.9821149010864 23.076923076923077,20.354143934721776 24.358974358974358,27.70743393899142 25.64102564102564,27.565112196973296 26.923076923076923,23.817306323829406 28.205128205128204,15.942169932159977 29.48717948717949,23.864746904502127 30.76923076923077,23.646520233407667 32.05128205128205,26.426538260828316 33.33333333333333,23.69396081408037 34.61538461538461,20.60083495421984 35.8974358974359,23.029792684662468 37.17948717948718,20.439536979932647 38.46153846153847,21.046776412543306 39.743589743589745,21.312443664310454 41.02564102564102,20.800085393045222 42.30769230769231,21.07524076094692 43.58974358974359,21.81531381944115 44.871794871794876,21.34090801271408 46.15384615384615,22.46050571658998 47.43589743589743,22.213814697091898 48.717948717948715,21.41681294179041 50.0,21.957635561459284 51.28205128205128,24.2727358982874 52.56410256410257,26.132406660657537 53.84615384615385,26.69220551259548 55.12820512820513,29.111675126903567 56.41025641025641,30.724654869775605 57.692307692307686,30.250249063048532 58.97435897435898,25.57260780871959 60.256410256410255,22.953887755586134 61.53846153846154,24.557379382323642 62.82051282051282,27.327909293609757 64.1025641025641,27.565112196973296 65.38461538461539,28.419042649082034 66.66666666666666,27.308933061340678 67.94871794871796,27.88770814554771 69.23076923076923,26.103942312253913 70.51282051282051,22.745149200626223 71.7948717948718,21.720432658095746 73.07692307692307,22.963375871720682 74.35897435897436,16.777124151999637 75.64102564102564,20.54390625741261 76.92307692307693,22.48897006499361 78.2051282051282,25.544143460315965 79.48717948717949,26.189335357464778 80.76923076923077,22.840030361971632 82.05128205128204,18.959390862944176 83.33333333333334,15.534180938374703 84.61538461538461,19.092224488827757 85.8974358974359,26.568860002846442 87.17948717948718,26.844015370748153 88.46153846153845,25.79083447981405 89.74358974358975,24.10194980786566 91.02564102564102,19.025807675885957 92.3076923076923,19.452772901940328 93.58974358974359,19.244034346980417 94.87179487179486,19.756392618245652 96.15384615384616,19.64253522463116 97.43589743589743,21.084728877081464 98.71794871794873,20.638787418758014 100.0,21.179610038426873" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>VLSFINANCE.NS</td>
+          <td>14</td>
+          <td>₹334.58</td>
+          <td>₹4684.12</td>
+          <td>₹3525.90</td>
+          <td>
+            <span class="text-red">₹-1158.22</span>
+            <span class="pnl-badge pnl-down arrow-down">24.7%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="10.003458107690665" x2="100" y2="10.003458107690665" class="reference-line" />
+        <polyline points="0.0,9.426104475857482 1.282051282051282,8.655206160625681 2.564102564102564,7.9581172585543705 3.8461538461538463,7.851503661766994 5.128205128205128,10.393827892850599 6.41025641025641,10.205203836996006 7.6923076923076925,10.549647765078305 8.974358974358974,11.886418247873873 10.256410256410255,14.141705872222232 11.538461538461538,17.028474031388132 12.82051282051282,15.691703548592567 14.102564102564102,15.00281569242797 15.384615384615385,14.584562351185188 16.666666666666664,15.043820921961576 17.94871794871795,13.780859852326497 19.230769230769234,14.871598957920433 20.51282051282051,15.142233472842236 21.794871794871796,15.87212655854043 23.076923076923077,16.725035332839443 24.358974358974358,18.52926543231813 25.64102564102564,18.586672753665184 26.923076923076923,18.176620458329115 28.205128205128204,18.586672753665184 29.48717948717949,17.397521097190594 30.76923076923077,16.94646357232092 32.05128205128205,18.00439849428797 33.33333333333333,17.766568162993053 34.61538461538461,16.036147476674856 35.8974358974359,20.02185578734141 37.17948717948718,20.407304944957318 38.46153846153847,21.817884840913372 39.743589743589745,23.4826971599778 41.02564102564102,24.015765143914685 42.30769230769231,24.499626852411247 43.58974358974359,26.61549669634534 44.871794871794876,27.197770955722554 46.15384615384615,28.116288097275337 47.43589743589743,26.410470548677303 48.717948717948715,25.83639733520681 50.0,26.861528073546978 51.28205128205128,25.557561774378293 52.56410256410257,26.377666365050423 53.84615384615385,28.058880775928287 55.12820512820513,29.904116104940584 56.41025641025641,31.759192689040944 57.692307692307686,33.42728542646805 58.97435897435898,31.83136189302009 60.256410256410255,31.021098557436027 61.53846153846154,29.057768167366945 62.82051282051282,31.15395550112491 64.1025641025641,31.070304832876353 65.38461538461539,31.60501302599458 66.66666666666666,31.749351433952874 67.94871794871796,32.55469414199291 69.23076923076923,32.55469414199291 70.51282051282051,30.351893211447564 71.7948717948718,30.28300442583111 73.07692307692307,28.969196871574354 74.35897435897436,28.788773861626485 75.64102564102564,30.212475431033305 76.92307692307693,31.280251608088417 78.2051282051282,31.4278704344094 79.48717948717949,31.5574469597356 80.76923076923077,30.187872293313138 82.05128205128204,30.097660788339205 83.33333333333334,28.49353620898452 84.61538461538461,29.7712591612517 85.8974358974359,30.909564333104615 87.17948717948718,29.96316363546898 88.46153846153845,30.57988228765442 89.74358974358975,30.01072970172796 91.02564102564102,27.727558521296746 92.3076923076923,26.715549456407338 93.58974358974359,25.88068298310311 94.87179487179486,21.855609652084297 96.15384615384616,21.36354689768102 97.43589743589743,21.83428693272682 98.71794871794873,20.074342481144427 100.0,23.572908664951736" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
+        <tr>
+          <td>WELCORP.NS</td>
+          <td>6</td>
+          <td>₹802.80</td>
+          <td>₹4816.80</td>
+          <td>₹4540.80</td>
+          <td>
+            <span class="text-red">₹-276.00</span>
+            <span class="pnl-badge pnl-down arrow-down">5.7%</span>
+          </td>
+          <td class="sparkline-cell">
+    <div class="sparkline-container">
+      <svg class="sparkline-svg" preserveAspectRatio="none" viewBox="0 0 100 40">
+        <line x1="0" y1="18.89495519893975" x2="100" y2="18.89495519893975" class="reference-line" />
+        <polyline points="0.0,17.627272465354814 1.282051282051282,17.754040738713297 2.564102564102564,16.855138436716704 3.8461538461538463,17.563888328675556 5.128205128205128,22.19093030626062 6.41025641025641,19.54032095421936 7.6923076923076925,20.39312570226743 8.974358974358974,22.173643723529917 10.256410256410255,24.345990953355038 11.538461538461538,28.437148866288283 12.82051282051282,27.152179549972633 14.102564102564102,23.78129591748538 15.384615384615385,23.055259442795812 16.666666666666664,21.56285113371172 17.94871794871795,19.396266098130162 19.230769230769234,20.064680630384053 20.51282051282051,21.551326745224582 21.794871794871796,18.88919300469619 23.076923076923077,20.47955861592095 24.358974358974358,26.057362643694724 25.64102564102564,28.702209801492405 26.923076923076923,25.79230170849059 28.205128205128204,28.235472067763403 29.48717948717949,25.901783399118386 30.76923076923077,26.691204010487198 32.05128205128205,28.9557463482094 33.33333333333333,28.396813506583307 34.61538461538461,27.008124693883435 35.8974358974359,25.17574692442883 37.17948717948718,19.015961278054686 38.46153846153847,21.850960845890118 39.743589743589745,21.70690598980092 41.02564102564102,21.80486329194158 42.30769230769231,19.995534299461234 43.58974358974359,26.4203808810395 44.871794871794876,26.73730156443574 46.15384615384615,29.61263649197615 47.43589743589743,27.64196606067591 48.717948717948715,22.78443631334813 50.0,21.70690598980092 51.28205128205128,23.164741133423608 52.56410256410257,23.556570341986227 53.84615384615385,24.127027572099458 55.12820512820513,26.48952721196232 56.41025641025641,30.978276527701745 57.692307692307686,29.74516695957821 58.97435897435898,24.075167823907343 60.256410256410255,21.12492437120055 61.53846153846154,19.765046529718518 62.82051282051282,20.007058687948373 64.1025641025641,17.327638364689278 65.38461538461539,16.866662825203843 66.66666666666666,18.053674839378832 67.94871794871796,18.27840041487799 69.23076923076923,18.27840041487799 70.51282051282051,18.08824800484025 71.7948717948718,10.908553977354575 73.07692307692307,10.06727361779366 74.35897435897436,11.358005128352872 75.64102564102564,15.852516638335874 76.92307692307693,16.117577573540007 78.2051282051282,10.931602754328853 79.48717948717949,11.173614912558708 80.76923076923077,13.662882825780052 82.05128205128204,13.530352358177993 83.33333333333334,12.464346423117924 84.61538461538461,18.24958944366015 85.8974358974359,20.058918436140477 87.17948717948718,22.819009478809534 88.46153846153845,24.85882624103259 89.74358974358975,24.00025929874096 91.02564102564102,21.879771817107958 92.3076923076923,19.54032095421936 93.58974358974359,21.620473076147398 94.87179487179486,20.74461955112507 96.15384615384616,21.799101097698 97.43589743589743,22.80172289607883 98.71794871794873,20.836814659022153 100.0,24.196173903022277" class="sparkline " />
+      </svg>
+    </div>
+    </td>
+        </tr>
+        
       </tbody>
-   </table>
-  </div>
-  </div>
-</body>
-</html>
+    </table>
+    
+      </div>
+    </body>
+    </html>
+    
