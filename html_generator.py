@@ -140,7 +140,7 @@ def generate_html(total_invested, current_value, total_pnl, pnl_percent, pnl_cla
       <div class="header">
         <h1>📊 Portfolio Dashboard</h1>
         <div class="info">
-          <div><strong>Owner:</strong> SM Thamizha</div>
+          <div><strong>Owner:</strong> Lavs</div>
           <div><strong>Last Updated:</strong> {datetime.today().strftime('%d-%m-%Y')}</div>
         </div>
       </div>
